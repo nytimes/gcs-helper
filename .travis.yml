@@ -5,7 +5,7 @@ install:
   - gometalinter --install
   - go install ./...
 script:
-  - gometalinter --vendor --disable errcheck
+  - gometalinter --vendor --disable errcheck --deadline 10m
   - go test
 go:
   - 1.7.x
