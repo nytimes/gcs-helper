@@ -3,7 +3,6 @@ package main
 import (
 	"io"
 	"log"
-	"net"
 	"net/http"
 	"strconv"
 	"time"
@@ -78,25 +77,4 @@ func handleObjectError(err error, w http.ResponseWriter) error {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	return err
-}
-
-func main() {
-	config, err := loadConfig()
-	if err != nil {
-		log.Fatal(err)
-	}
-	handler, err := getHandler(config)
-	if err != nil {
-		log.Fatal(err)
-	}
-	listener, err := net.Listen("tcp", config.Listen)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	log.Printf("Listening on %s...", listener.Addr())
-	err = http.Serve(listener, handler)
-	if err != nil {
-		log.Fatal(err)
-	}
 }
