@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -29,45 +30,76 @@ func getHandler(c Config) (http.HandlerFunc, error) {
 		objectHandle := bucketHandle.Object(strings.TrimLeft(r.URL.Path, "/"))
 		switch r.Method {
 		case "HEAD":
-			writeHeader(ctx, objectHandle, w)
+			r.Header.Del("Range")
+			writeHeader(ctx, objectHandle, w, nil, http.StatusOK)
 		case "GET":
-			handleGet(ctx, objectHandle, w)
+			handleGet(ctx, objectHandle, w, r)
 		}
 	}, nil
 }
 
-func writeHeader(ctx context.Context, object *storage.ObjectHandle, w http.ResponseWriter) error {
+func writeHeader(ctx context.Context, object *storage.ObjectHandle, w http.ResponseWriter, extra http.Header, status int) error {
 	attrs, err := object.Attrs(ctx)
 	if err != nil {
 		return handleObjectError(err, w)
 	}
-	w.Header().Set("Cache-Control", attrs.CacheControl)
-	w.Header().Set("Content-Type", attrs.ContentType)
+	if attrs.CacheControl != "" {
+		w.Header().Set("Cache-Control", attrs.CacheControl)
+	}
+	w.Header().Set("Accept-Ranges", "bytes")
 	w.Header().Set("Content-Length", strconv.FormatInt(attrs.Size, 10))
+	w.Header().Set("Content-Type", attrs.ContentType)
 	w.Header().Set("Date", time.Now().Format(time.RFC1123))
 	w.Header().Set("Last-Modified", attrs.Updated.Format(time.RFC1123))
-	w.WriteHeader(http.StatusOK)
+	for name, value := range extra {
+		w.Header().Set(name, value[0])
+	}
+	w.WriteHeader(status)
 	return nil
 }
 
-func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.ResponseWriter) error {
-	reader, err := object.NewReader(ctx)
+func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.ResponseWriter, r *http.Request) error {
+	offset, end, length := getRange(r)
+	reader, err := object.NewRangeReader(ctx, offset, length)
 	if err != nil {
 		return handleObjectError(err, w)
 	}
-	err = writeHeader(ctx, object, w)
+	extraHeaders := make(http.Header)
+	extraHeaders.Set("Content-Length", strconv.FormatInt(reader.Remain(), 10))
+	extraHeaders.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", offset, end, reader.Size()))
+	status := http.StatusPartialContent
+	if length == -1 {
+		status = http.StatusOK
+	}
+	err = writeHeader(ctx, object, w, extraHeaders, status)
 	if err != nil {
 		return err
 	}
-	n, err := io.Copy(w, reader)
+	_, err = io.Copy(w, reader)
 	if err != nil {
-		log.Printf("failed to download object from S3: %s", err)
-		return nil
-	}
-	if n != reader.Size() {
-		log.Printf("wrong number of bytes served from GCS. GCS reports %d bytes, but only %d bytes were transferred", reader.Size(), n)
+		log.Printf("failed to download object from GCS: %s", err)
 	}
 	return nil
+}
+
+func getRange(r *http.Request) (offset, end, length int64) {
+	length = -1
+	if rangeHeader := r.Header.Get("Range"); rangeHeader != "" {
+		parts := strings.SplitN(rangeHeader, "=", 2)
+		if len(parts) == 2 {
+			rangeSpec := strings.SplitN(parts[1], "-", 2)
+			if len(rangeSpec) == 2 {
+				if rangeStart, err := strconv.ParseInt(rangeSpec[0], 10, 64); err == nil {
+					offset = rangeStart
+				}
+				if rangeEnd, err := strconv.ParseInt(rangeSpec[1], 10, 64); err == nil {
+					end = rangeEnd
+					length = end - offset + 1
+				}
+			}
+		}
+	}
+	return offset, end, length
 }
 
 func handleObjectError(err error, w http.ResponseWriter) error {
