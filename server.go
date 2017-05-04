@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"cloud.google.com/go/storage"
@@ -25,7 +26,7 @@ func getHandler(c Config) (http.HandlerFunc, error) {
 		}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		objectHandle := bucketHandle.Object(r.URL.Path)
+		objectHandle := bucketHandle.Object(strings.TrimLeft(r.URL.Path, "/"))
 		switch r.Method {
 		case "HEAD":
 			writeHeader(ctx, objectHandle, w)
