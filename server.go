@@ -25,9 +25,14 @@ func getHandler(c Config) (http.HandlerFunc, error) {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
+		objectName := strings.TrimLeft(r.URL.Path, "/")
+		if objectName == "" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		objectHandle := bucketHandle.Object(strings.TrimLeft(r.URL.Path, "/"))
+		objectHandle := bucketHandle.Object(objectName)
 		switch r.Method {
 		case "HEAD":
 			r.Header.Del("Range")
