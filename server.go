@@ -35,7 +35,6 @@ func getHandler(c Config) (http.HandlerFunc, error) {
 		objectHandle := bucketHandle.Object(objectName)
 		switch r.Method {
 		case "HEAD":
-			r.Header.Del("Range")
 			writeHeader(ctx, objectHandle, w, nil, http.StatusOK)
 		case "GET":
 			handleGet(ctx, objectHandle, w, r)
