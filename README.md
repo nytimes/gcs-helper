@@ -2,6 +2,7 @@ gcs-helper
 ==========
 
 [![Build Status](https://travis-ci.org/NYTimes/gcs-helper.svg?branch=master)](https://travis-ci.org/NYTimes/gcs-helper)
+[![codecov](https://codecov.io/gh/NYTimes/gcs-helper/branch/master/graph/badge.svg)](https://codecov.io/gh/NYTimes/gcs-helper)
 
 gcs-helper is inspired by
 [s3-helper](https://github.com/crunchyroll/evs-s3helper) and is used to provide
