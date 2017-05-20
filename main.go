@@ -4,6 +4,9 @@ import (
 	"log"
 	"net"
 	"net/http"
+
+	"cloud.google.com/go/storage"
+	"golang.org/x/net/context"
 )
 
 func main() {
@@ -11,7 +14,11 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	handler, err := getHandler(config)
+	client, err := storage.NewClient(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	handler, err := getHandler(config, client)
 	if err != nil {
 		log.Fatal(err)
 	}

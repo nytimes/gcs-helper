@@ -13,11 +13,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-func getHandler(c Config) (http.HandlerFunc, error) {
-	client, err := storage.NewClient(context.Background())
-	if err != nil {
-		return nil, err
-	}
+func getHandler(c Config, client *storage.Client) (http.HandlerFunc, error) {
 	bucketHandle := client.Bucket(c.BucketName)
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
