@@ -39,6 +39,12 @@
 			"revisionTime": "2017-04-24T00:47:00Z"
 		},
 		{
+			"checksumSHA1": "+8MT464k/+W1/SmoSLmLvVSBX7s=",
+			"path": "github.com/fsouza/fake-gcs-server/fakestorage",
+			"revision": "ebb4dec74077fd844896f5e4c607313909a42c7e",
+			"revisionTime": "2017-05-18T04:18:34Z"
+		},
+		{
 			"checksumSHA1": "kBeNcaKk56FguvPSUCEaH6AxpRc=",
 			"path": "github.com/golang/protobuf/proto",
 			"revision": "2bba0603135d7d7f5cb73b2125beeda19c09f4ef",
@@ -61,6 +67,12 @@
 			"path": "github.com/googleapis/gax-go",
 			"revision": "9af46dd5a1713e8b5cd71106287eba3cefdde50b",
 			"revisionTime": "2017-03-21T00:53:43Z"
+		},
+		{
+			"checksumSHA1": "zmCk+lgIeiOf0Ng9aFP9aFy8ksE=",
+			"path": "github.com/gorilla/mux",
+			"revision": "4c1c3952b7d9d0a061a3fa7b36fd373ba0398ebc",
+			"revisionTime": "2017-04-27T04:12:50Z"
 		},
 		{
 			"checksumSHA1": "pyUcq4sKKVm0KzBSZIPpHsmDF6k=",
