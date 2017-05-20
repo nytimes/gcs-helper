@@ -6,7 +6,9 @@ install:
   - go install ./...
 script:
   - gometalinter --vendor --disable errcheck --deadline 10m
-  - go test
+  - go test -coverprofile=coverage.txt -covermode=atomic
+after_success:
+  - bash <(curl -s https://codecov.io/bash)
 go:
   - 1.7.x
   - 1.8.x
