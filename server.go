@@ -14,6 +14,16 @@ import (
 	"golang.org/x/net/context"
 )
 
+type codeWrapper struct {
+	code int
+	http.ResponseWriter
+}
+
+func (w *codeWrapper) WriteHeader(code int) {
+	w.code = code
+	w.ResponseWriter.WriteHeader(code)
+}
+
 func getHandler(c Config, client *storage.Client) (http.HandlerFunc, error) {
 	bucketHandle := client.Bucket(c.BucketName)
 	logger := c.logger()
@@ -29,19 +39,21 @@ func getHandler(c Config, client *storage.Client) (http.HandlerFunc, error) {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
+		resp := codeWrapper{ResponseWriter: w}
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		objectHandle := bucketHandle.Object(objectName)
 		switch r.Method {
 		case "HEAD":
-			writeHeader(ctx, objectHandle, w, nil, http.StatusOK)
+			writeHeader(ctx, objectHandle, &resp, nil, http.StatusOK)
 		case "GET":
-			handleGet(ctx, objectHandle, w, r)
+			handleGet(ctx, objectHandle, &resp, r)
 		}
 		logger.WithFields(logrus.Fields{
 			"method":   r.Method,
 			"ellapsed": time.Since(start).String(),
 			"url":      r.URL.RequestURI(),
+			"response": resp.code,
 		}).Debug("finished handling request")
 	}, nil
 }
