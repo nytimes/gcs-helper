@@ -10,12 +10,15 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/sirupsen/logrus"
 	"golang.org/x/net/context"
 )
 
 func getHandler(c Config, client *storage.Client) (http.HandlerFunc, error) {
 	bucketHandle := client.Bucket(c.BucketName)
+	logger := c.logger()
 	return func(w http.ResponseWriter, r *http.Request) {
+		start := time.Now()
 		defer r.Body.Close()
 		if r.Method != "GET" && r.Method != "HEAD" {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -35,6 +38,11 @@ func getHandler(c Config, client *storage.Client) (http.HandlerFunc, error) {
 		case "GET":
 			handleGet(ctx, objectHandle, w, r)
 		}
+		logger.WithFields(logrus.Fields{
+			"method":   r.Method,
+			"ellapsed": time.Since(start).String(),
+			"url":      r.URL.RequestURI(),
+		}).Debug("finished handling request")
 	}, nil
 }
 
