@@ -1,15 +1,21 @@
 package main
 
 import (
+	"flag"
+	"fmt"
 	"log"
 	"net"
 	"net/http"
+	"os"
 
 	"cloud.google.com/go/storage"
 	"golang.org/x/net/context"
 )
 
+const version = "1.0"
+
 func main() {
+	handleFlags()
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatal(err)
@@ -32,5 +38,14 @@ func main() {
 	err = http.Serve(listener, handler)
 	if err != nil {
 		logger.WithError(err).Fatal("failed to start server")
+	}
+}
+
+func handleFlags() {
+	printVersion := flag.Bool("version", false, "print version and exit")
+	flag.Parse()
+	if *printVersion {
+		fmt.Printf("gcs-helper %s\n", version)
+		os.Exit(0)
 	}
 }
