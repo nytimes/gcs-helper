@@ -3,7 +3,7 @@ sudo: false
 install:
   - go get github.com/alecthomas/gometalinter
   - gometalinter --install
-  - go install ./...
+  - go build -i
 script:
   - gometalinter --vendor --disable errcheck --deadline 10m
   - go test -coverprofile=coverage.txt -covermode=atomic
