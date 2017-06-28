@@ -10,22 +10,24 @@ import (
 
 func TestLoadConfig(t *testing.T) {
 	setEnvs(map[string]string{
-		"GCS_HELPER_LISTEN":       "0.0.0.0:3030",
-		"GCS_HELPER_BUCKET_NAME":  "some-bucket",
-		"GCS_HELPER_LOG_LEVEL":    "info",
-		"GCS_HELPER_MAP_PREFIX":   "/map/",
-		"GCS_HELPER_PROXY_PREFIX": "/proxy/",
+		"GCS_HELPER_LISTEN":         "0.0.0.0:3030",
+		"GCS_HELPER_BUCKET_NAME":    "some-bucket",
+		"GCS_HELPER_LOG_LEVEL":      "info",
+		"GCS_HELPER_MAP_PREFIX":     "/map/",
+		"GCS_HELPER_PROXY_PREFIX":   "/proxy/",
+		"GCS_HELPER_MAP_EXTENSIONS": ".mp4,.vtt,.srt",
 	})
 	config, err := loadConfig()
 	if err != nil {
 		t.Fatal(err)
 	}
 	expectedConfig := Config{
-		BucketName:  "some-bucket",
-		Listen:      "0.0.0.0:3030",
-		LogLevel:    "info",
-		MapPrefix:   "/map/",
-		ProxyPrefix: "/proxy/",
+		BucketName:    "some-bucket",
+		Listen:        "0.0.0.0:3030",
+		LogLevel:      "info",
+		MapPrefix:     "/map/",
+		ProxyPrefix:   "/proxy/",
+		MapExtensions: []string{".mp4", ".vtt", ".srt"},
 	}
 	if !reflect.DeepEqual(config, expectedConfig) {
 		t.Errorf("wrong config returned\nwant %#v\ngot  %#v", expectedConfig, config)
@@ -75,6 +77,30 @@ func TestConfigLoggerInvalidLevel(t *testing.T) {
 	}
 	if logger.Level != logrus.DebugLevel {
 		t.Errorf("wrong log leve, want DebugLevel (%v), got %v", logrus.DebugLevel, logger.Level)
+	}
+}
+
+func TestConfigCheckExtension(t *testing.T) {
+	config := Config{
+		MapExtensions: []string{".vtt", ".mp4"},
+	}
+	var tests = []struct {
+		input  string
+		output bool
+	}{
+		{".vtt", true},
+		{".mp4", true},
+		{".mp", false},
+		{"mp4", false},
+		{"vtt", false},
+	}
+	for _, test := range tests {
+		t.Run(test.input, func(t *testing.T) {
+			r := config.checkExtension(test.input)
+			if r != test.output {
+				t.Errorf("config.checkExtension(%q): expected %v, got %v", test.input, test.output, r)
+			}
+		})
 	}
 }
 
