@@ -24,7 +24,7 @@ func (w *codeWrapper) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
-func getHandler(c Config, client *storage.Client) (http.HandlerFunc, error) {
+func getProxyHandler(c Config, client *storage.Client) (http.HandlerFunc, error) {
 	bucketHandle := client.Bucket(c.BucketName)
 	logger := c.logger()
 	return func(w http.ResponseWriter, r *http.Request) {

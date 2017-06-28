@@ -25,7 +25,7 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("failed to create storage client instance")
 	}
-	handler, err := getHandler(config, client)
+	handler, err := getProxyHandler(config, client)
 	if err != nil {
 		logger.WithError(err).Fatal("failed to get handle instance")
 	}

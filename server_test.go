@@ -153,7 +153,7 @@ func TestServerHandlerBucketNotFound(t *testing.T) {
 
 func startServer(t *testing.T, cfg Config) (string, func()) {
 	server := fakestorage.NewServer(getObjects())
-	handler, err := getHandler(cfg, server.Client())
+	handler, err := getProxyHandler(cfg, server.Client())
 	if err != nil {
 		t.Fatal(err)
 	}
