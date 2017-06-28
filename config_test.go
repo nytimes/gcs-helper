@@ -13,8 +13,8 @@ func TestLoadConfig(t *testing.T) {
 		"GCS_HELPER_LISTEN":       "0.0.0.0:3030",
 		"GCS_HELPER_BUCKET_NAME":  "some-bucket",
 		"GCS_HELPER_LOG_LEVEL":    "info",
-		"GCS_HELPER_MAP_PREFIX":   "/map",
-		"GCS_HELPER_PROXY_PREFIX": "/proxy",
+		"GCS_HELPER_MAP_PREFIX":   "/map/",
+		"GCS_HELPER_PROXY_PREFIX": "/proxy/",
 	})
 	config, err := loadConfig()
 	if err != nil {
@@ -24,8 +24,8 @@ func TestLoadConfig(t *testing.T) {
 		BucketName:  "some-bucket",
 		Listen:      "0.0.0.0:3030",
 		LogLevel:    "info",
-		MapPrefix:   "/map",
-		ProxyPrefix: "/proxy",
+		MapPrefix:   "/map/",
+		ProxyPrefix: "/proxy/",
 	}
 	if !reflect.DeepEqual(config, expectedConfig) {
 		t.Errorf("wrong config returned\nwant %#v\ngot  %#v", expectedConfig, config)
