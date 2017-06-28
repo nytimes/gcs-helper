@@ -30,7 +30,7 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		defer r.Body.Close()
-		if r.Method != "GET" && r.Method != "HEAD" {
+		if r.Method != http.MethodGet && r.Method != http.MethodHead {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
@@ -44,9 +44,9 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 		defer cancel()
 		objectHandle := bucketHandle.Object(objectName)
 		switch r.Method {
-		case "HEAD":
+		case http.MethodHead:
 			writeHeader(ctx, objectHandle, &resp, nil, http.StatusOK)
-		case "GET":
+		case http.MethodGet:
 			handleGet(ctx, objectHandle, &resp, r)
 		}
 		logger.WithFields(logrus.Fields{

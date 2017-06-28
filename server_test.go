@@ -22,20 +22,20 @@ func TestServerMultiPrefixes(t *testing.T) {
 	var tests = []serverTest{
 		{
 			testCase:       "healthcheck",
-			method:         "GET",
+			method:         http.MethodGet,
 			addr:           addr,
 			expectedStatus: http.StatusOK,
 		},
 		{
 			testCase:       "not found",
-			method:         "GET",
+			method:         http.MethodGet,
 			addr:           addr + "/what",
 			expectedStatus: http.StatusNotFound,
 			expectedBody:   "not found\n",
 		},
 		{
 			testCase:       "proxy: download file",
-			method:         "GET",
+			method:         http.MethodGet,
 			addr:           addr + "/proxy/musics/music/music1.txt",
 			expectedStatus: http.StatusOK,
 			expectedHeader: http.Header{
@@ -46,7 +46,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 		},
 		{
 			testCase: "proxy: download file - range",
-			method:   "GET",
+			method:   http.MethodGet,
 			addr:     addr + "/proxy/musics/music/music2.txt",
 			reqHeader: http.Header{
 				"Range": []string{"bytes=2-10"},
@@ -61,7 +61,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 		},
 		{
 			testCase:       "map: list of files",
-			method:         "GET",
+			method:         http.MethodGet,
 			addr:           addr + "/map/musics/music/mu",
 			expectedStatus: http.StatusOK,
 			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
@@ -104,7 +104,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 		},
 		{
 			testCase:       "map: empty list",
-			method:         "GET",
+			method:         http.MethodGet,
 			addr:           addr + "/map/musics/musyc",
 			expectedStatus: http.StatusOK,
 			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
@@ -112,14 +112,14 @@ func TestServerMultiPrefixes(t *testing.T) {
 		},
 		{
 			testCase:       "map: method not allowed",
-			method:         "POST",
+			method:         http.MethodPost,
 			addr:           addr + "/map/musics",
 			expectedStatus: http.StatusMethodNotAllowed,
 			expectedBody:   "method not allowed\n",
 		},
 		{
 			testCase:       "map: invalid url",
-			method:         "GET",
+			method:         http.MethodGet,
 			addr:           addr + "/map/",
 			expectedStatus: http.StatusBadRequest,
 			expectedBody:   "prefix cannot be empty\n",

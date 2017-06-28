@@ -28,7 +28,7 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 	bucketHandle := client.Bucket(c.BucketName)
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
-		if r.Method != "GET" {
+		if r.Method != http.MethodGet {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}

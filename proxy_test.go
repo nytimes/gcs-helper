@@ -11,7 +11,7 @@ func TestServerProxyOnly(t *testing.T) {
 	var tests = []serverTest{
 		{
 			"healthcheck through the proxy",
-			"GET",
+			http.MethodGet,
 			addr,
 			nil,
 			http.StatusOK,
@@ -20,7 +20,7 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 		{
 			"download file",
-			"GET",
+			http.MethodGet,
 			addr + "/musics/music/music1.txt",
 			nil,
 			http.StatusOK,
@@ -32,7 +32,7 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 		{
 			"download file - range",
-			"GET",
+			http.MethodGet,
 			addr + "/musics/music/music2.txt",
 			http.Header{
 				"Range": []string{"bytes=2-10"},
@@ -47,7 +47,7 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 		{
 			"file attrs",
-			"HEAD",
+			http.MethodHead,
 			addr + "/musics/music/music2.txt",
 			nil,
 			http.StatusOK,
@@ -59,7 +59,7 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 		{
 			"download file - object not found",
-			"GET",
+			http.MethodGet,
 			addr + "/musics/music/some-music.txt",
 			nil,
 			http.StatusNotFound,
@@ -68,7 +68,7 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 		{
 			"file attrs - object not found",
-			"HEAD",
+			http.MethodHead,
 			addr + "/musics/music/some-music.txt",
 			nil,
 			http.StatusNotFound,
@@ -77,7 +77,7 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 		{
 			"method not allowed - POST",
-			"POST",
+			http.MethodPost,
 			addr + "/whatever",
 			nil,
 			http.StatusMethodNotAllowed,
@@ -86,7 +86,7 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 		{
 			"method not allowed - PUT",
-			"PUT",
+			http.MethodPut,
 			addr + "/whatever",
 			nil,
 			http.StatusMethodNotAllowed,
@@ -102,7 +102,7 @@ func TestServerProxyOnly(t *testing.T) {
 func TestServerProxyHandlerBucketNotFound(t *testing.T) {
 	addr, cleanup := startServer(t, Config{BucketName: "some-bucket"})
 	defer cleanup()
-	req, _ := http.NewRequest("HEAD", addr+"/whatever", nil)
+	req, _ := http.NewRequest(http.MethodHead, addr+"/whatever", nil)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
