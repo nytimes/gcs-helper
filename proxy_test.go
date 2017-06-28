@@ -138,7 +138,7 @@ func TestServer(t *testing.T) {
 	}
 }
 
-func TestServerHandlerBucketNotFound(t *testing.T) {
+func TestServerProxyHandlerBucketNotFound(t *testing.T) {
 	addr, cleanup := startServer(t, Config{BucketName: "some-bucket"})
 	defer cleanup()
 	req, _ := http.NewRequest("HEAD", addr+"/whatever", nil)
@@ -153,10 +153,7 @@ func TestServerHandlerBucketNotFound(t *testing.T) {
 
 func startServer(t *testing.T, cfg Config) (string, func()) {
 	server := fakestorage.NewServer(getObjects())
-	handler, err := getProxyHandler(cfg, server.Client())
-	if err != nil {
-		t.Fatal(err)
-	}
+	handler := getProxyHandler(cfg, server.Client())
 	httpServer := httptest.NewServer(handler)
 	return httpServer.URL, func() {
 		httpServer.Close()

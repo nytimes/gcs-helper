@@ -24,7 +24,7 @@ func (w *codeWrapper) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
-func getProxyHandler(c Config, client *storage.Client) (http.HandlerFunc, error) {
+func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 	bucketHandle := client.Bucket(c.BucketName)
 	logger := c.logger()
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -50,12 +50,13 @@ func getProxyHandler(c Config, client *storage.Client) (http.HandlerFunc, error)
 			handleGet(ctx, objectHandle, &resp, r)
 		}
 		logger.WithFields(logrus.Fields{
-			"method":   r.Method,
-			"ellapsed": time.Since(start).String(),
-			"url":      r.URL.RequestURI(),
-			"response": resp.code,
+			"method":      r.Method,
+			"ellapsed":    time.Since(start).String(),
+			"url":         r.URL.RequestURI(),
+			"proxyPrefix": c.ProxyPrefix,
+			"response":    resp.code,
 		}).Debug("finished handling request")
-	}, nil
+	}
 }
 
 func writeHeader(ctx context.Context, object *storage.ObjectHandle, w http.ResponseWriter, extra http.Header, status int) error {
