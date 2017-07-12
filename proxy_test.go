@@ -6,7 +6,10 @@ import (
 )
 
 func TestServerProxyOnly(t *testing.T) {
-	addr, cleanup := startServer(t, Config{BucketName: "my-bucket"})
+	addr, cleanup := startServer(t, Config{
+		BucketName:      "my-bucket",
+		ProxyLogHeaders: []string{"Accept", "User-Agent", "Range"},
+	})
 	defer cleanup()
 	var tests = []serverTest{
 		{

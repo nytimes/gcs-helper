@@ -49,13 +49,23 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 		case http.MethodGet:
 			handleGet(ctx, objectHandle, &resp, r)
 		}
-		logger.WithFields(logrus.Fields{
-			"method":      r.Method,
-			"ellapsed":    time.Since(start).String(),
-			"url":         r.URL.RequestURI(),
-			"proxyPrefix": c.ProxyPrefix,
-			"response":    resp.code,
-		}).Debug("finished handling request")
+
+		// Don't process headers if it's not going to log the request.
+		if logger.Level <= logrus.DebugLevel {
+			fields := logrus.Fields{
+				"method":      r.Method,
+				"ellapsed":    time.Since(start).String(),
+				"url":         r.URL.RequestURI(),
+				"proxyPrefix": c.ProxyPrefix,
+				"response":    resp.code,
+			}
+			for _, header := range c.ProxyLogHeaders {
+				if value := r.Header.Get(header); value != "" {
+					fields["ReqHeader/"+header] = value
+				}
+			}
+			logger.WithFields(fields).Debug("finished handling request")
+		}
 	}
 }
 
