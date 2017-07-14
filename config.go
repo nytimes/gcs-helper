@@ -35,7 +35,7 @@ func (c Config) logger() *logrus.Logger {
 	}
 
 	logger := logrus.New()
-	logger.Out = os.Stderr
+	logger.Out = os.Stdout
 	logger.Level = level
 	return logger
 }

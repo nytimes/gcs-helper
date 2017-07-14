@@ -59,8 +59,8 @@ func TestConfigLogger(t *testing.T) {
 		t.Fatal(err)
 	}
 	logger := config.logger()
-	if logger.Out != os.Stderr {
-		t.Errorf("wrong log output, want os.Stderr, got %#v", logger.Out)
+	if logger.Out != os.Stdout {
+		t.Errorf("wrong log output, want os.Stdout, got %#v", logger.Out)
 	}
 	if logger.Level != logrus.InfoLevel {
 		t.Errorf("wrong log leve, want InfoLevel (%v), got %v", logrus.InfoLevel, logger.Level)
@@ -74,8 +74,8 @@ func TestConfigLoggerInvalidLevel(t *testing.T) {
 		t.Fatal(err)
 	}
 	logger := config.logger()
-	if logger.Out != os.Stderr {
-		t.Errorf("wrong log output, want os.Stderr, got %#v", logger.Out)
+	if logger.Out != os.Stdout {
+		t.Errorf("wrong log output, want os.Stdout, got %#v", logger.Out)
 	}
 	if logger.Level != logrus.DebugLevel {
 		t.Errorf("wrong log leve, want DebugLevel (%v), got %v", logrus.DebugLevel, logger.Level)
