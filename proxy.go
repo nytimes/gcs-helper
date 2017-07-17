@@ -100,6 +100,7 @@ func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.Respons
 	if err != nil {
 		return handleObjectError(err, w)
 	}
+	defer reader.Close()
 	extraHeaders := make(http.Header)
 	extraHeaders.Set("Content-Length", strconv.FormatInt(reader.Remain(), 10))
 	extraHeaders.Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", offset, end, reader.Size()))
