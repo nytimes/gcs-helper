@@ -9,12 +9,18 @@ import (
 	"os"
 
 	"cloud.google.com/go/storage"
+	"github.com/google/gops/agent"
 	"golang.org/x/net/context"
 )
 
 const version = "1.4"
 
 func main() {
+	err := agent.Listen(&agent.Options{NoShutdownCleanup: true})
+	if err != nil {
+		log.Fatalf("could not start gops agent: %v", err)
+	}
+	defer agent.Close()
 	handleFlags()
 	config, err := loadConfig()
 	if err != nil {
