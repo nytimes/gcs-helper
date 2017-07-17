@@ -12,7 +12,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-const version = "1.3"
+const version = "1.4"
 
 func main() {
 	handleFlags()
