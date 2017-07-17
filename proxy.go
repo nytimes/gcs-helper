@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -43,15 +42,16 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
 		objectHandle := bucketHandle.Object(objectName)
+		var err error
+
 		switch r.Method {
 		case http.MethodHead:
-			writeHeader(ctx, objectHandle, &resp, nil, http.StatusOK)
+			err = writeHeader(ctx, objectHandle, &resp, nil, http.StatusOK)
 		case http.MethodGet:
-			handleGet(ctx, objectHandle, &resp, r)
+			err = handleGet(ctx, objectHandle, &resp, r)
 		}
 
-		// Don't process headers if it's not going to log the request.
-		if logger.Level <= logrus.DebugLevel {
+		if err != nil || logger.Level <= logrus.DebugLevel {
 			fields := logrus.Fields{
 				"method":      r.Method,
 				"ellapsed":    time.Since(start).String(),
@@ -64,7 +64,12 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 					fields["ReqHeader/"+header] = value
 				}
 			}
-			logger.WithFields(fields).Debug("finished handling request")
+			entry := logger.WithFields(fields)
+			if err != nil {
+				entry.WithError(err).Error("failed to handle request")
+			} else {
+				entry.Debug("finished handling request")
+			}
 		}
 	}
 }
@@ -107,10 +112,7 @@ func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.Respons
 		return err
 	}
 	_, err = io.Copy(w, reader)
-	if err != nil {
-		log.Printf("failed to download object from GCS: %s", err)
-	}
-	return nil
+	return err
 }
 
 func getRange(r *http.Request) (offset, end, length int64) {
@@ -137,6 +139,7 @@ func handleObjectError(err error, w http.ResponseWriter) error {
 	switch err {
 	case storage.ErrBucketNotExist, storage.ErrObjectNotExist:
 		http.Error(w, err.Error(), http.StatusNotFound)
+		return nil
 	default:
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
