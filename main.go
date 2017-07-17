@@ -13,7 +13,7 @@ import (
 	"golang.org/x/net/context"
 )
 
-const version = "1.4"
+const version = "1.5"
 
 func main() {
 	err := agent.Listen(&agent.Options{NoShutdownCleanup: true})
