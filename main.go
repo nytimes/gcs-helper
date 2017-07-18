@@ -28,14 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 	logger := config.logger()
-	hc := http.Client{
-		Timeout: config.ClientConfig.Timeout,
-		Transport: &http.Transport{
-			IdleConnTimeout: config.ClientConfig.IdleConnTimeout,
-			MaxIdleConns:    config.ClientConfig.MaxIdleConns,
-		},
-	}
-	client, err := storage.NewClient(context.Background(), option.WithHTTPClient(&hc))
+	client, err := storage.NewClient(context.Background(), option.WithHTTPClient(httpClient(config.ClientConfig)))
 	if err != nil {
 		logger.WithError(err).Fatal("failed to create storage client instance")
 	}
@@ -49,6 +42,16 @@ func main() {
 	err = http.Serve(listener, handler)
 	if err != nil {
 		logger.WithError(err).Fatal("failed to start server")
+	}
+}
+
+func httpClient(c ClientConfig) *http.Client {
+	return &http.Client{
+		Timeout: c.Timeout,
+		Transport: &http.Transport{
+			IdleConnTimeout: c.IdleConnTimeout,
+			MaxIdleConns:    c.MaxIdleConns,
+		},
 	}
 }
 
