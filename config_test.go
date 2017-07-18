@@ -4,6 +4,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -16,7 +17,11 @@ func TestLoadConfig(t *testing.T) {
 		"GCS_HELPER_MAP_PREFIX":        "/map/",
 		"GCS_HELPER_PROXY_PREFIX":      "/proxy/",
 		"GCS_HELPER_PROXY_LOG_HEADERS": "Accept,Range",
+		"GCS_HELPER_PROXY_TIMEOUT":     "20s",
 		"GCS_HELPER_MAP_EXTENSIONS":    ".mp4,.vtt,.srt",
+		"GCS_CLIENT_TIMEOUT":           "60s",
+		"GCS_CLIENT_IDLE_CONN_TIMEOUT": "3m",
+		"GCS_CLIENT_MAX_IDLE_CONNS":    "16",
 	})
 	config, err := loadConfig()
 	if err != nil {
@@ -30,6 +35,12 @@ func TestLoadConfig(t *testing.T) {
 		ProxyPrefix:     "/proxy/",
 		MapExtensions:   []string{".mp4", ".vtt", ".srt"},
 		ProxyLogHeaders: []string{"Accept", "Range"},
+		ProxyTimeout:    20 * time.Second,
+		ClientConfig: ClientConfig{
+			IdleConnTimeout: 3 * time.Minute,
+			MaxIdleConns:    16,
+			Timeout:         time.Minute,
+		},
 	}
 	if !reflect.DeepEqual(config, expectedConfig) {
 		t.Errorf("wrong config returned\nwant %#v\ngot  %#v", expectedConfig, config)
@@ -43,9 +54,15 @@ func TestLoadConfigDefaultValues(t *testing.T) {
 		t.Fatal(err)
 	}
 	expectedConfig := Config{
-		BucketName: "some-bucket",
-		Listen:     ":8080",
-		LogLevel:   "debug",
+		BucketName:   "some-bucket",
+		Listen:       ":8080",
+		LogLevel:     "debug",
+		ProxyTimeout: 10 * time.Second,
+		ClientConfig: ClientConfig{
+			IdleConnTimeout: 120 * time.Second,
+			MaxIdleConns:    10,
+			Timeout:         2 * time.Second,
+		},
 	}
 	if !reflect.DeepEqual(config, expectedConfig) {
 		t.Errorf("wrong config returned\nwant %#v\ngot  %#v", expectedConfig, config)

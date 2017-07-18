@@ -7,6 +7,7 @@ import (
 	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 )
@@ -16,6 +17,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 		BucketName:    "my-bucket",
 		MapPrefix:     "/map/",
 		ProxyPrefix:   "/proxy/",
+		ProxyTimeout:  time.Second,
 		MapExtensions: []string{".mp3", ".txt"},
 	})
 	defer cleanup()

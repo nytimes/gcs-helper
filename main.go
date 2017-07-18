@@ -11,6 +11,7 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/google/gops/agent"
 	"golang.org/x/net/context"
+	"google.golang.org/api/option"
 )
 
 const version = "1.5"
@@ -27,7 +28,7 @@ func main() {
 		log.Fatal(err)
 	}
 	logger := config.logger()
-	client, err := storage.NewClient(context.Background())
+	client, err := storage.NewClient(context.Background(), option.WithHTTPClient(httpClient(config.ClientConfig)))
 	if err != nil {
 		logger.WithError(err).Fatal("failed to create storage client instance")
 	}
@@ -41,6 +42,16 @@ func main() {
 	err = http.Serve(listener, handler)
 	if err != nil {
 		logger.WithError(err).Fatal("failed to start server")
+	}
+}
+
+func httpClient(c ClientConfig) *http.Client {
+	return &http.Client{
+		Timeout: c.Timeout,
+		Transport: &http.Transport{
+			IdleConnTimeout: c.IdleConnTimeout,
+			MaxIdleConns:    c.MaxIdleConns,
+		},
 	}
 }
 

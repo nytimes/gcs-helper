@@ -20,6 +20,12 @@
   revision = "0a4f71a498b7c4812f64969510bcb4eca251e33a"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/google/go-cmp"
+  packages = ["cmp","cmp/cmpopts"]
+  revision = "f299ad1c37e02b87f050c93c5d86af49a2850fc1"
+
+[[projects]]
   name = "github.com/google/gops"
   packages = ["agent","internal","signal"]
   revision = "fa6968806ca68b7db113256f300d82b5206a2c3c"
@@ -106,6 +112,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8db03b62d536e1f6ca45e3574f1d96d082b175a3c4a825e20a238e2cf3544722"
+  inputs-digest = "c5692d68794da26b447cc5fc7607832f93055187dc312625f579e3cb80a437a5"
   solver-name = "gps-cdcl"
   solver-version = 1

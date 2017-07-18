@@ -39,7 +39,7 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 			return
 		}
 		resp := codeWrapper{ResponseWriter: w}
-		ctx, cancel := context.WithCancel(context.Background())
+		ctx, cancel := context.WithTimeout(context.Background(), c.ProxyTimeout)
 		defer cancel()
 		objectHandle := bucketHandle.Object(objectName)
 		var err error
