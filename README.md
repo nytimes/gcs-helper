@@ -26,5 +26,6 @@ The following environment variables control the behavior of gcs-helper:
 | GCS_HELPER_BUCKET_NAME    |               | Yes      | Name of the bucket                                                                                           |
 | GCS_HELPER_LOG_LEVEL      | debug         | No       | Logging level                                                                                                |
 | GCS_HELPER_PROXY_PREFIX   |               | No       | Prefix to use for the proxy binding. Required if running in map and proxy modes (example value: ``/proxy/``) |
+| GCS_HELPER_PROXY_TIMEOUT  | 2s            | No       | Defines the maximum time in serving the proxy requests                                                       |
 | GCS_HELPER_MAP_PREFIX     |               | No       | Prefix to use for the map binding. Required if running in map and proxy modes (example value: ``/map/``)     |
 | GCS_HELPER_MAP_EXTENSIONS |               | No       | Comma separated list of extensions to include in the mapping (example value: ``.mp4,.vtt,.srt``)             |
