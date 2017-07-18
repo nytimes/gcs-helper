@@ -4,6 +4,7 @@ import (
 	"os"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -16,6 +17,7 @@ func TestLoadConfig(t *testing.T) {
 		"GCS_HELPER_MAP_PREFIX":        "/map/",
 		"GCS_HELPER_PROXY_PREFIX":      "/proxy/",
 		"GCS_HELPER_PROXY_LOG_HEADERS": "Accept,Range",
+		"GCS_HELPER_PROXY_TIMEOUT":     "1s",
 		"GCS_HELPER_MAP_EXTENSIONS":    ".mp4,.vtt,.srt",
 	})
 	config, err := loadConfig()
@@ -30,6 +32,7 @@ func TestLoadConfig(t *testing.T) {
 		ProxyPrefix:     "/proxy/",
 		MapExtensions:   []string{".mp4", ".vtt", ".srt"},
 		ProxyLogHeaders: []string{"Accept", "Range"},
+		ProxyTimeout:    time.Second,
 	}
 	if !reflect.DeepEqual(config, expectedConfig) {
 		t.Errorf("wrong config returned\nwant %#v\ngot  %#v", expectedConfig, config)
@@ -43,9 +46,10 @@ func TestLoadConfigDefaultValues(t *testing.T) {
 		t.Fatal(err)
 	}
 	expectedConfig := Config{
-		BucketName: "some-bucket",
-		Listen:     ":8080",
-		LogLevel:   "debug",
+		BucketName:   "some-bucket",
+		Listen:       ":8080",
+		LogLevel:     "debug",
+		ProxyTimeout: 2 * time.Second,
 	}
 	if !reflect.DeepEqual(config, expectedConfig) {
 		t.Errorf("wrong config returned\nwant %#v\ngot  %#v", expectedConfig, config)
