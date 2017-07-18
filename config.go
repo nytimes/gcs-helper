@@ -16,9 +16,19 @@ type Config struct {
 	LogLevel        string        `envconfig:"LOG_LEVEL" default:"debug"`
 	ProxyLogHeaders []string      `envconfig:"PROXY_LOG_HEADERS"`
 	ProxyPrefix     string        `envconfig:"PROXY_PREFIX"`
-	ProxyTimeout    time.Duration `envconfig:"PROXY_TIMEOUT" default:"2s"`
+	ProxyTimeout    time.Duration `envconfig:"PROXY_TIMEOUT" default:"10s"`
 	MapPrefix       string        `envconfig:"MAP_PREFIX"`
 	MapExtensions   []string      `envconfig:"MAP_EXTENSIONS"`
+	ClientConfig    ClientConfig
+}
+
+// ClientConfig contains configuration for the GCS client communication.
+//
+// It contains options related to timeouts and keep-alive connections.
+type ClientConfig struct {
+	Timeout         time.Duration `envconfig:"GCS_CLIENT_TIMEOUT" default:"2s"`
+	IdleConnTimeout time.Duration `envconfig:"GCS_CLIENT_IDLE_CONN_TIMEOUT" default:"120s"`
+	MaxIdleConns    int           `envconfig:"GCS_CLIENT_MAX_IDLE_CONNS" default:"10"`
 }
 
 func (c Config) checkExtension(ext string) bool {
