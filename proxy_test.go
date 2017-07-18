@@ -3,12 +3,14 @@ package main
 import (
 	"net/http"
 	"testing"
+	"time"
 )
 
 func TestServerProxyOnly(t *testing.T) {
 	addr, cleanup := startServer(t, Config{
 		BucketName:      "my-bucket",
 		ProxyLogHeaders: []string{"Accept", "User-Agent", "Range"},
+		ProxyTimeout:    time.Second,
 	})
 	defer cleanup()
 	var tests = []serverTest{
@@ -103,7 +105,7 @@ func TestServerProxyOnly(t *testing.T) {
 }
 
 func TestServerProxyHandlerBucketNotFound(t *testing.T) {
-	addr, cleanup := startServer(t, Config{BucketName: "some-bucket"})
+	addr, cleanup := startServer(t, Config{BucketName: "some-bucket", ProxyTimeout: time.Second})
 	defer cleanup()
 	req, _ := http.NewRequest(http.MethodHead, addr+"/whatever", nil)
 	resp, err := http.DefaultClient.Do(req)
