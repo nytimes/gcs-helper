@@ -14,7 +14,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-const version = "1.6"
+const version = "1.7"
 
 func main() {
 	err := agent.Listen(&agent.Options{NoShutdownCleanup: true})
