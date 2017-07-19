@@ -120,10 +120,12 @@ func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.Respons
 
 func getReader(ctx context.Context, object *storage.ObjectHandle, offset, length int64, try int) (*storage.Reader, error) {
 	reader, err := object.NewRangeReader(ctx, offset, length)
-	if err != nil && err != context.DeadlineExceeded && err != context.Canceled && try >= 0 {
+	switch err {
+	case nil, context.DeadlineExceeded, context.Canceled, storage.ErrBucketNotExist, storage.ErrObjectNotExist:
+		return reader, err
+	default:
 		return getReader(ctx, object, offset, length, try-1)
 	}
-	return reader, err
 }
 
 func getRange(r *http.Request) (offset, end, length int64) {
