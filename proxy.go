@@ -13,6 +13,8 @@ import (
 	"golang.org/x/net/context"
 )
 
+const maxTry = 5
+
 type codeWrapper struct {
 	code int
 	http.ResponseWriter
@@ -96,7 +98,7 @@ func writeHeader(ctx context.Context, object *storage.ObjectHandle, w http.Respo
 
 func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.ResponseWriter, r *http.Request) error {
 	offset, end, length := getRange(r)
-	reader, err := object.NewRangeReader(ctx, offset, length)
+	reader, err := getReader(ctx, object, offset, length, maxTry)
 	if err != nil {
 		return handleObjectError(err, w)
 	}
@@ -114,6 +116,14 @@ func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.Respons
 	}
 	_, err = io.Copy(w, reader)
 	return err
+}
+
+func getReader(ctx context.Context, object *storage.ObjectHandle, offset, length int64, try int) (*storage.Reader, error) {
+	reader, err := object.NewRangeReader(ctx, offset, length)
+	if err != nil && err != context.DeadlineExceeded && err != context.Canceled && try >= 0 {
+		return getReader(ctx, object, offset, length, try-1)
+	}
+	return reader, err
 }
 
 func getRange(r *http.Request) (offset, end, length int64) {
