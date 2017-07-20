@@ -26,6 +26,7 @@ type clip struct {
 
 func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 	bucketHandle := client.Bucket(c.BucketName)
+	logger := c.logger()
 	return func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if r.Method != http.MethodGet {
@@ -37,6 +38,20 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 			http.Error(w, "prefix cannot be empty", http.StatusBadRequest)
 			return
 		}
+		m, err := getPrefixMapping(prefix, c, bucketHandle)
+		if err != nil && err != iterator.Done {
+			logger.WithError(err).WithField("prefix", prefix).Error("failed to map request")
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(m)
+	}
+}
+
+func getPrefixMapping(prefix string, config Config, bucketHandle *storage.BucketHandle) (mapping, error) {
+	var err error
+	for i := 0; i < maxTry; i++ {
 		iter := bucketHandle.Objects(context.Background(), &storage.Query{
 			Prefix:    prefix,
 			Delimiter: "/",
@@ -45,17 +60,15 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 		obj, err := iter.Next()
 		for ; err == nil; obj, err = iter.Next() {
 			ext := filepath.Ext(obj.Name)
-			if c.checkExtension(ext) {
+			if config.checkExtension(ext) {
 				m.Sequences = append(m.Sequences, sequence{
 					Clips: []clip{{Type: "source", Path: "/" + obj.Name}},
 				})
 			}
 		}
-		if err != iterator.Done {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		if err == iterator.Done {
+			return m, nil
 		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(m)
 	}
+	return mapping{}, err
 }
