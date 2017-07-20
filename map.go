@@ -56,8 +56,9 @@ func getPrefixMapping(prefix string, config Config, bucketHandle *storage.Bucket
 			Prefix:    prefix,
 			Delimiter: "/",
 		})
+		var obj *storage.ObjectAttrs
 		m := mapping{Sequences: []sequence{}}
-		obj, err := iter.Next()
+		obj, err = iter.Next()
 		for ; err == nil; obj, err = iter.Next() {
 			ext := filepath.Ext(obj.Name)
 			if config.checkExtension(ext) {
