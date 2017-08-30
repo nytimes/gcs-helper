@@ -11,15 +11,16 @@ import (
 // Config represents the gcs-helper configuration that is loaded from the
 // environment.
 type Config struct {
-	Listen          string        `default:":8080"`
-	BucketName      string        `envconfig:"BUCKET_NAME" required:"true"`
-	LogLevel        string        `envconfig:"LOG_LEVEL" default:"debug"`
-	ProxyLogHeaders []string      `envconfig:"PROXY_LOG_HEADERS"`
-	ProxyPrefix     string        `envconfig:"PROXY_PREFIX"`
-	ProxyTimeout    time.Duration `envconfig:"PROXY_TIMEOUT" default:"10s"`
-	MapPrefix       string        `envconfig:"MAP_PREFIX"`
-	MapExtensions   []string      `envconfig:"MAP_EXTENSIONS"`
-	ClientConfig    ClientConfig
+	Listen           string        `default:":8080"`
+	BucketName       string        `envconfig:"BUCKET_NAME" required:"true"`
+	LogLevel         string        `envconfig:"LOG_LEVEL" default:"debug"`
+	ProxyLogHeaders  []string      `envconfig:"PROXY_LOG_HEADERS"`
+	ProxyPrefix      string        `envconfig:"PROXY_PREFIX"`
+	ProxyTimeout     time.Duration `envconfig:"PROXY_TIMEOUT" default:"10s"`
+	MapPrefix        string        `envconfig:"MAP_PREFIX"`
+	MapExtensions    []string      `envconfig:"MAP_EXTENSIONS"`
+	MapExtraPrefixes []string      `envconfig:"MAP_EXTRA_PREFIXES"`
+	ClientConfig     ClientConfig
 }
 
 // ClientConfig contains configuration for the GCS client communication.
