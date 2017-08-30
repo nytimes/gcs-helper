@@ -14,11 +14,12 @@ import (
 
 func TestServerMultiPrefixes(t *testing.T) {
 	addr, cleanup := startServer(t, Config{
-		BucketName:    "my-bucket",
-		MapPrefix:     "/map/",
-		ProxyPrefix:   "/proxy/",
-		ProxyTimeout:  time.Second,
-		MapExtensions: []string{".mp3", ".txt"},
+		BucketName:       "my-bucket",
+		MapPrefix:        "/map/",
+		MapExtraPrefixes: []string{"subs/", "mp4s/"},
+		ProxyPrefix:      "/proxy/",
+		ProxyTimeout:     time.Second,
+		MapExtensions:    []string{".mp3", ".txt", ".mp4", ".srt"},
 	})
 	defer cleanup()
 	var tests = []serverTest{
@@ -98,6 +99,41 @@ func TestServerMultiPrefixes(t *testing.T) {
 							map[string]interface{}{
 								"type": "source",
 								"path": "/musics/music/music4.mp3",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testCase:       "map: list of files including extra prefixes",
+			method:         http.MethodGet,
+			addr:           addr + "/map/videos/video/video1",
+			expectedStatus: http.StatusOK,
+			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
+			expectedBody: map[string]interface{}{
+				"sequences": []interface{}{
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/videos/video/video1_480p.mp4",
+							},
+						},
+					},
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/videos/video/video1_720p.mp4",
+							},
+						},
+					},
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/subs/video1.srt",
 							},
 						},
 					},
@@ -237,6 +273,18 @@ func getObjects() []fakestorage.Object {
 		{
 			BucketName: "my-bucket",
 			Name:       "musics/musics/music1.txt",
+		},
+		{
+			BucketName: "my-bucket",
+			Name:       "videos/video/video1_720p.mp4",
+		},
+		{
+			BucketName: "my-bucket",
+			Name:       "videos/video/video1_480p.mp4",
+		},
+		{
+			BucketName: "my-bucket",
+			Name:       "subs/video1.srt",
 		},
 		{
 			BucketName: "your-bucket",

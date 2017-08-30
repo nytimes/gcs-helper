@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"net/http"
+	"path"
 	"path/filepath"
 	"strings"
 
@@ -50,6 +51,27 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 }
 
 func getPrefixMapping(prefix string, config Config, bucketHandle *storage.BucketHandle) (mapping, error) {
+	m := mapping{Sequences: []sequence{}}
+	for _, p := range getPrefixes(prefix, config) {
+		sequences, err := expandPrefix(p, config, bucketHandle)
+		if err != nil {
+			return m, err
+		}
+		m.Sequences = append(m.Sequences, sequences...)
+	}
+	return m, nil
+}
+
+func getPrefixes(originalPrefix string, config Config) []string {
+	prefixes := []string{originalPrefix}
+	_, lastPart := path.Split(originalPrefix)
+	for _, p := range config.MapExtraPrefixes {
+		prefixes = append(prefixes, path.Join(p, lastPart))
+	}
+	return prefixes
+}
+
+func expandPrefix(prefix string, config Config, bucketHandle *storage.BucketHandle) ([]sequence, error) {
 	var err error
 	for i := 0; i < maxTry; i++ {
 		iter := bucketHandle.Objects(context.Background(), &storage.Query{
@@ -57,19 +79,19 @@ func getPrefixMapping(prefix string, config Config, bucketHandle *storage.Bucket
 			Delimiter: "/",
 		})
 		var obj *storage.ObjectAttrs
-		m := mapping{Sequences: []sequence{}}
+		sequences := []sequence{}
 		obj, err = iter.Next()
 		for ; err == nil; obj, err = iter.Next() {
 			ext := filepath.Ext(obj.Name)
 			if config.checkExtension(ext) {
-				m.Sequences = append(m.Sequences, sequence{
+				sequences = append(sequences, sequence{
 					Clips: []clip{{Type: "source", Path: "/" + obj.Name}},
 				})
 			}
 		}
 		if err == iterator.Done {
-			return m, nil
+			return sequences, nil
 		}
 	}
-	return mapping{}, err
+	return nil, err
 }
