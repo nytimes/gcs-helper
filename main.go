@@ -17,12 +17,12 @@ import (
 const version = "1.9"
 
 func main() {
+	handleFlags()
 	err := agent.Listen(&agent.Options{NoShutdownCleanup: true})
 	if err != nil {
 		log.Fatalf("could not start gops agent: %v", err)
 	}
 	defer agent.Close()
-	handleFlags()
 	config, err := loadConfig()
 	if err != nil {
 		log.Fatal(err)
