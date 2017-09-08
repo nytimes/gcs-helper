@@ -49,6 +49,10 @@ func (o *objectList) Swap(i int, j int) {
 func (s *Server) CreateObject(obj Object) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
+	s.createObject(obj)
+}
+
+func (s *Server) createObject(obj Object) {
 	index := s.findObject(obj)
 	if index < 0 {
 		s.buckets[obj.BucketName] = append(s.buckets[obj.BucketName], obj)
@@ -59,25 +63,36 @@ func (s *Server) CreateObject(obj Object) {
 
 // ListObjects returns a sorted list of objects that match the given criteria,
 // or an error if the bucket doesn't exist.
-func (s *Server) ListObjects(bucketName, prefix, delimiter string) ([]Object, error) {
+func (s *Server) ListObjects(bucketName, prefix, delimiter string) ([]Object, []string, error) {
 	s.mtx.RLock()
 	defer s.mtx.RUnlock()
 	objects, ok := s.buckets[bucketName]
 	if !ok {
-		return nil, errors.New("bucket not found")
+		return nil, nil, errors.New("bucket not found")
 	}
 	olist := objectList(objects)
 	sort.Sort(&olist)
-	var respObjects []Object
+	var (
+		respObjects  []Object
+		respPrefixes []string
+	)
+	prefixes := make(map[string]bool)
 	for _, obj := range olist {
 		if strings.HasPrefix(obj.Name, prefix) {
 			objName := strings.Replace(obj.Name, prefix, "", 1)
-			if delimiter == "" || !strings.Contains(objName, delimiter) {
+			delimPos := strings.Index(objName, delimiter)
+			if delimiter != "" && delimPos > -1 {
+				prefixes[obj.Name[:len(prefix)+delimPos+1]] = true
+			} else {
 				respObjects = append(respObjects, obj)
 			}
 		}
 	}
-	return respObjects, nil
+	for p := range prefixes {
+		respPrefixes = append(respPrefixes, p)
+	}
+	sort.Strings(respPrefixes)
+	return respObjects, respPrefixes, nil
 }
 
 // GetObject returns the object with the given name in the given bucket, or an
@@ -111,7 +126,7 @@ func (s *Server) listObjects(w http.ResponseWriter, r *http.Request) {
 	bucketName := mux.Vars(r)["bucketName"]
 	prefix := r.URL.Query().Get("prefix")
 	delimiter := r.URL.Query().Get("delimiter")
-	objs, err := s.ListObjects(bucketName, prefix, delimiter)
+	objs, prefixes, err := s.ListObjects(bucketName, prefix, delimiter)
 	encoder := json.NewEncoder(w)
 	if err != nil {
 		w.WriteHeader(http.StatusNotFound)
@@ -119,7 +134,7 @@ func (s *Server) listObjects(w http.ResponseWriter, r *http.Request) {
 		encoder.Encode(errResp)
 		return
 	}
-	encoder.Encode(newListObjectsResponse(objs, s))
+	encoder.Encode(newListObjectsResponse(objs, prefixes))
 }
 
 func (s *Server) getObject(w http.ResponseWriter, r *http.Request) {
@@ -133,7 +148,43 @@ func (s *Server) getObject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.Header().Set("Accept-Ranges", "bytes")
-	encoder.Encode(newObjectResponse(obj, s))
+	encoder.Encode(newObjectResponse(obj))
+}
+
+func (s *Server) deleteObject(w http.ResponseWriter, r *http.Request) {
+	s.mtx.Lock()
+	defer s.mtx.Unlock()
+	vars := mux.Vars(r)
+	obj := Object{BucketName: vars["bucketName"], Name: vars["objectName"]}
+	index := s.findObject(obj)
+	if index < 0 {
+		errResp := newErrorResponse(http.StatusNotFound, "Not Found", nil)
+		w.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(w).Encode(errResp)
+		return
+	}
+	bucket := s.buckets[obj.BucketName]
+	bucket[index] = bucket[len(bucket)-1]
+	s.buckets[obj.BucketName] = bucket[:len(bucket)-1]
+	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) rewriteObject(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	obj, err := s.GetObject(vars["sourceBucket"], vars["sourceObject"])
+	if err != nil {
+		http.Error(w, "not found", http.StatusNotFound)
+		return
+	}
+	dstBucket := vars["destinationBucket"]
+	newObject := Object{
+		BucketName: dstBucket,
+		Name:       vars["destinationObject"],
+		Content:    append([]byte(nil), obj.Content...),
+	}
+	s.CreateObject(newObject)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(newObjectRewriteResponse(newObject))
 }
 
 func (s *Server) downloadObject(w http.ResponseWriter, r *http.Request) {
