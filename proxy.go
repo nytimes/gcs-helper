@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -10,7 +11,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
-	"golang.org/x/net/context"
 )
 
 const maxTry = 5

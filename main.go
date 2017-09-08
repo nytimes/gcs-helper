@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -10,7 +11,6 @@ import (
 
 	"cloud.google.com/go/storage"
 	"github.com/google/gops/agent"
-	"golang.org/x/net/context"
 	"google.golang.org/api/option"
 )
 

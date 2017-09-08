@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"path"
@@ -8,7 +9,6 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
-	"golang.org/x/net/context"
 	"google.golang.org/api/iterator"
 )
 
