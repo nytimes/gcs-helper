@@ -18,16 +18,17 @@ and ``GCS_HELPER_MAP_EXTENSIONS``).
 
 The following environment variables control the behavior of gcs-helper:
 
-| Variable                      | Default value | Required | Description                                                                                                  |
-| ----------------------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
-| GCS_HELPER_LISTEN             | :8080         | No       | Address to bind the server                                                                                   |
-| GCS_HELPER_BUCKET_NAME        |               | Yes      | Name of the bucket                                                                                           |
-| GCS_HELPER_LOG_LEVEL          | debug         | No       | Logging level                                                                                                |
-| GCS_HELPER_PROXY_PREFIX       |               | No       | Prefix to use for the proxy binding. Required if running in map and proxy modes (example value: ``/proxy/``) |
-| GCS_HELPER_PROXY_TIMEOUT      | 10s           | No       | Defines the maximum time in serving the proxy requests, this is a hard timeout and includes retries          |
-| GCS_HELPER_MAP_PREFIX         |               | No       | Prefix to use for the map binding. Required if running in map and proxy modes (example value: ``/map/``)     |
-| GCS_HELPER_MAP_EXTENSIONS     |               | No       | Comma separated list of extensions to include in the mapping (example value: ``.mp4,.vtt,.srt``)             |
-| GCS_HELPER_MAP_EXTRA_PREFIXES |               | No       | Comma separated list of prefixes that allow gcs-helper to lookup files in different paths                    |
+| Variable                         | Default value | Required | Description                                                                                                  |
+| -------------------------------- | ------------- | -------- | ------------------------------------------------------------------------------------------------------------ |
+| GCS_HELPER_LISTEN                | :8080         | No       | Address to bind the server                                                                                   |
+| GCS_HELPER_BUCKET_NAME           |               | Yes      | Name of the bucket                                                                                           |
+| GCS_HELPER_LOG_LEVEL             | debug         | No       | Logging level                                                                                                |
+| GCS_HELPER_PROXY_PREFIX          |               | No       | Prefix to use for the proxy binding. Required if running in map and proxy modes (example value: ``/proxy/``) |
+| GCS_HELPER_PROXY_TIMEOUT         | 10s           | No       | Defines the maximum time in serving the proxy requests, this is a hard timeout and includes retries          |
+| GCS_HELPER_MAP_PREFIX            |               | No       | Prefix to use for the map binding. Required if running in map and proxy modes (example value: ``/map/``)     |
+| GCS_HELPER_MAP_EXTENSIONS        |               | No       | Comma separated list of extensions to include in the mapping (example value: ``.mp4,.vtt,.srt``)             |
+| GCS_HELPER_EXTRA_RESOURCES_TOKEN |               |          | Token to be used as query string parameter on the map location to pass extra resources to the mapping        | 
+| GCS_HELPER_MAP_EXTRA_PREFIXES    |               | No       | Comma separated list of prefixes that allow gcs-helper to lookup files in different paths                    |
 
 The are also some configuration variables for network communication with Google
 Cloud Storage API:
@@ -47,3 +48,12 @@ and ``GCS_CLIENT_TIMEOUT`` controls how long requests from gcs-helper to
 Google's API can take. Since gcs-helper automatically retries on failures, the
 number of retries is roughly the value of ``GCS_HELPER_PROXY_TIMEOUT`` divided
 by the value of ``GCS_CLIENT_TIMEOUT``.
+
+### GCS_HELPER_EXTRA_RESOURCES_TOKEN
+
+The extra resources token is the query string parameter that the mapping location
+will look for to add external resources to the JSON output.
+
+For example, giving that you set `GCS_HELPER_EXTRA_RESOURCES_TOKEN` to `extras`,
+you'll be able to add videos and captions files that are in different bucket
+by calling the map location with `?extras=/bucket-1/file.mp4,/bucket-2/pt-br.vtt`.
