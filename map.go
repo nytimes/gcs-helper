@@ -45,9 +45,22 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+		m = appendExtraResources(r, c, m)
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(m)
 	}
+}
+
+func appendExtraResources(r *http.Request, config Config, m mapping) mapping {
+	resources := r.URL.Query().Get(config.ExtraResourcesToken)
+	for _, resource := range strings.Split(resources, ",") {
+		if resource != "" {
+			m.Sequences = append(m.Sequences, sequence{
+				Clips: []clip{{Type: "source", Path: resource}},
+			})
+		}
+	}
+	return m
 }
 
 func getPrefixMapping(prefix string, config Config, bucketHandle *storage.BucketHandle) (mapping, error) {
@@ -85,7 +98,7 @@ func expandPrefix(prefix string, config Config, bucketHandle *storage.BucketHand
 			ext := filepath.Ext(obj.Name)
 			if config.checkExtension(ext) {
 				sequences = append(sequences, sequence{
-					Clips: []clip{{Type: "source", Path: "/" + obj.Name}},
+					Clips: []clip{{Type: "source", Path: "/" + obj.Bucket + "/" + obj.Name}},
 				})
 			}
 		}

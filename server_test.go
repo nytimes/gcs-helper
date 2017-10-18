@@ -14,12 +14,13 @@ import (
 
 func TestServerMultiPrefixes(t *testing.T) {
 	addr, cleanup := startServer(t, Config{
-		BucketName:       "my-bucket",
-		MapPrefix:        "/map/",
-		MapExtraPrefixes: []string{"subs/", "mp4s/"},
-		ProxyPrefix:      "/proxy/",
-		ProxyTimeout:     time.Second,
-		MapExtensions:    []string{".mp3", ".txt", ".mp4", ".srt"},
+		BucketName:          "my-bucket",
+		MapPrefix:           "/map/",
+		MapExtraPrefixes:    []string{"subs/", "mp4s/"},
+		ExtraResourcesToken: "extra",
+		ProxyPrefix:         "/proxy/",
+		ProxyTimeout:        time.Second,
+		MapExtensions:       []string{".mp3", ".txt", ".mp4", ".srt"},
 	})
 	defer cleanup()
 	var tests = []serverTest{
@@ -74,7 +75,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/musics/music/music1.txt",
+								"path": "/my-bucket/musics/music/music1.txt",
 							},
 						},
 					},
@@ -82,7 +83,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/musics/music/music2.txt",
+								"path": "/my-bucket/musics/music/music2.txt",
 							},
 						},
 					},
@@ -90,7 +91,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/musics/music/music3.txt",
+								"path": "/my-bucket/musics/music/music3.txt",
 							},
 						},
 					},
@@ -98,7 +99,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/musics/music/music4.mp3",
+								"path": "/my-bucket/musics/music/music4.mp3",
 							},
 						},
 					},
@@ -117,7 +118,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/videos/video/video1_480p.mp4",
+								"path": "/my-bucket/videos/video/video1_480p.mp4",
 							},
 						},
 					},
@@ -125,7 +126,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/videos/video/video1_720p.mp4",
+								"path": "/my-bucket/videos/video/video1_720p.mp4",
 							},
 						},
 					},
@@ -133,7 +134,26 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/subs/video1.srt",
+								"path": "/my-bucket/subs/video1.srt",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testCase:       "map: extra resources",
+			method:         http.MethodGet,
+			addr:           addr + "/map/musics/musyc?extra=/bucket/file.vtt",
+			expectedStatus: http.StatusOK,
+			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
+			expectedBody: map[string]interface{}{
+				"sequences": []interface{}{
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/bucket/file.vtt",
 							},
 						},
 					},
