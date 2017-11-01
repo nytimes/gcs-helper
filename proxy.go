@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -26,7 +27,6 @@ func (w *codeWrapper) WriteHeader(code int) {
 }
 
 func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
-	bucketHandle := client.Bucket(c.BucketName)
 	logger := c.logger()
 	return func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
@@ -35,22 +35,21 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		objectName := strings.TrimLeft(r.URL.Path, "/")
-		if objectName == "" {
+		if r.URL.Path == "/" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 		resp := codeWrapper{ResponseWriter: w}
 		ctx, cancel := context.WithTimeout(context.Background(), c.ProxyTimeout)
 		defer cancel()
-		objectHandle := bucketHandle.Object(objectName)
+		obj := objectHandle(&c, client, r)
 		var err error
 
 		switch r.Method {
 		case http.MethodHead:
-			err = writeHeader(ctx, objectHandle, &resp, nil, http.StatusOK)
+			err = writeHeader(ctx, obj, &resp, nil, http.StatusOK)
 		case http.MethodGet:
-			err = handleGet(ctx, objectHandle, &resp, r)
+			err = handleGet(ctx, obj, &resp, r)
 		}
 
 		if err != nil || logger.Level <= logrus.DebugLevel {
@@ -119,6 +118,9 @@ func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.Respons
 }
 
 func getReader(ctx context.Context, object *storage.ObjectHandle, offset, length int64, try int) (*storage.Reader, error) {
+	if try == 0 {
+		return nil, errors.New("max try exceeded")
+	}
 	reader, err := object.NewRangeReader(ctx, offset, length)
 	switch err {
 	case nil, context.DeadlineExceeded, context.Canceled, storage.ErrBucketNotExist, storage.ErrObjectNotExist:
@@ -157,4 +159,15 @@ func handleObjectError(err error, w http.ResponseWriter) error {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 	return err
+}
+
+func objectHandle(c *Config, client *storage.Client, r *http.Request) *storage.ObjectHandle {
+	bucketName := c.BucketName
+	objectName := strings.TrimLeft(r.URL.Path, "/")
+	if c.ProxyBucketOnPath {
+		pos := strings.Index(objectName, "/")
+		bucketName = objectName[:pos]
+		objectName = objectName[pos+1:]
+	}
+	return client.Bucket(bucketName).Object(objectName)
 }

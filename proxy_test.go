@@ -104,6 +104,43 @@ func TestServerProxyOnly(t *testing.T) {
 	}
 }
 
+func TestServerProxyHandlerBucketInThePath(t *testing.T) {
+	addr, cleanup := startServer(t, Config{
+		BucketName:          "my-bucket",
+		MapPrefix:           "/map/",
+		MapExtraPrefixes:    []string{"subs/", "mp4s/"},
+		ExtraResourcesToken: "extra",
+		ProxyPrefix:         "/proxy/",
+		ProxyBucketOnPath:   true,
+		ProxyTimeout:        time.Second,
+		MapExtensions:       []string{".mp3", ".txt", ".mp4", ".srt"},
+	})
+	defer cleanup()
+	var tests = []serverTest{
+		{
+			testCase:       "healthcheck",
+			method:         http.MethodGet,
+			addr:           addr,
+			expectedStatus: http.StatusOK,
+		},
+		{
+			testCase:       "proxy: download file",
+			method:         http.MethodGet,
+			addr:           addr + "/proxy/your-bucket/musics/music/music3.txt",
+			expectedStatus: http.StatusOK,
+			expectedHeader: http.Header{
+				"Accept-Ranges":  []string{"bytes"},
+				"Content-Length": []string{"9"},
+			},
+			expectedBody: "wait what",
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.testCase, test.run)
+	}
+}
+
 func TestServerProxyHandlerBucketNotFound(t *testing.T) {
 	addr, cleanup := startServer(t, Config{BucketName: "some-bucket", ProxyTimeout: time.Second})
 	defer cleanup()
