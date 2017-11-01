@@ -11,33 +11,35 @@ import (
 
 func TestLoadConfig(t *testing.T) {
 	setEnvs(map[string]string{
-		"GCS_HELPER_LISTEN":             "0.0.0.0:3030",
-		"GCS_HELPER_BUCKET_NAME":        "some-bucket",
-		"GCS_HELPER_LOG_LEVEL":          "info",
-		"GCS_HELPER_MAP_PREFIX":         "/map/",
-		"GCS_HELPER_PROXY_PREFIX":       "/proxy/",
-		"GCS_HELPER_PROXY_LOG_HEADERS":  "Accept,Range",
-		"GCS_HELPER_PROXY_TIMEOUT":      "20s",
-		"GCS_HELPER_MAP_EXTENSIONS":     ".mp4,.vtt,.srt",
-		"GCS_HELPER_MAP_EXTRA_PREFIXES": "subtitles/,mp4s/",
-		"GCS_CLIENT_TIMEOUT":            "60s",
-		"GCS_CLIENT_IDLE_CONN_TIMEOUT":  "3m",
-		"GCS_CLIENT_MAX_IDLE_CONNS":     "16",
+		"GCS_HELPER_LISTEN":               "0.0.0.0:3030",
+		"GCS_HELPER_BUCKET_NAME":          "some-bucket",
+		"GCS_HELPER_LOG_LEVEL":            "info",
+		"GCS_HELPER_MAP_PREFIX":           "/map/",
+		"GCS_HELPER_PROXY_PREFIX":         "/proxy/",
+		"GCS_HELPER_PROXY_LOG_HEADERS":    "Accept,Range",
+		"GCS_HELPER_PROXY_TIMEOUT":        "20s",
+		"GCS_HELPER_PROXY_BUCKET_ON_PATH": "true",
+		"GCS_HELPER_MAP_EXTENSIONS":       ".mp4,.vtt,.srt",
+		"GCS_HELPER_MAP_EXTRA_PREFIXES":   "subtitles/,mp4s/",
+		"GCS_CLIENT_TIMEOUT":              "60s",
+		"GCS_CLIENT_IDLE_CONN_TIMEOUT":    "3m",
+		"GCS_CLIENT_MAX_IDLE_CONNS":       "16",
 	})
 	config, err := loadConfig()
 	if err != nil {
 		t.Fatal(err)
 	}
 	expectedConfig := Config{
-		BucketName:       "some-bucket",
-		Listen:           "0.0.0.0:3030",
-		LogLevel:         "info",
-		MapPrefix:        "/map/",
-		ProxyPrefix:      "/proxy/",
-		MapExtensions:    []string{".mp4", ".vtt", ".srt"},
-		MapExtraPrefixes: []string{"subtitles/", "mp4s/"},
-		ProxyLogHeaders:  []string{"Accept", "Range"},
-		ProxyTimeout:     20 * time.Second,
+		BucketName:        "some-bucket",
+		Listen:            "0.0.0.0:3030",
+		LogLevel:          "info",
+		MapPrefix:         "/map/",
+		ProxyPrefix:       "/proxy/",
+		MapExtensions:     []string{".mp4", ".vtt", ".srt"},
+		MapExtraPrefixes:  []string{"subtitles/", "mp4s/"},
+		ProxyLogHeaders:   []string{"Accept", "Range"},
+		ProxyTimeout:      20 * time.Second,
+		ProxyBucketOnPath: true,
 		ClientConfig: ClientConfig{
 			IdleConnTimeout: 3 * time.Minute,
 			MaxIdleConns:    16,

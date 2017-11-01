@@ -17,6 +17,7 @@ type Config struct {
 	ProxyLogHeaders     []string      `envconfig:"PROXY_LOG_HEADERS"`
 	ProxyPrefix         string        `envconfig:"PROXY_PREFIX"`
 	ProxyTimeout        time.Duration `envconfig:"PROXY_TIMEOUT" default:"10s"`
+	ProxyBucketOnPath   bool          `envconfig:"PROXY_BUCKET_ON_PATH"`
 	MapPrefix           string        `envconfig:"MAP_PREFIX"`
 	ExtraResourcesToken string        `envconfig:"EXTRA_RESOURCES_TOKEN"`
 	MapExtensions       []string      `envconfig:"MAP_EXTENSIONS"`
