@@ -19,7 +19,7 @@ func TestLoadConfig(t *testing.T) {
 		"GCS_HELPER_PROXY_LOG_HEADERS":    "Accept,Range",
 		"GCS_HELPER_PROXY_TIMEOUT":        "20s",
 		"GCS_HELPER_PROXY_BUCKET_ON_PATH": "true",
-		"GCS_HELPER_MAP_EXTENSIONS":       ".mp4,.vtt,.srt",
+		"GCS_HELPER_MAP_REGEX_FILTER":     `\d{3,4}p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
 		"GCS_HELPER_MAP_EXTRA_PREFIXES":   "subtitles/,mp4s/",
 		"GCS_CLIENT_TIMEOUT":              "60s",
 		"GCS_CLIENT_IDLE_CONN_TIMEOUT":    "3m",
@@ -35,8 +35,8 @@ func TestLoadConfig(t *testing.T) {
 		LogLevel:          "info",
 		MapPrefix:         "/map/",
 		ProxyPrefix:       "/proxy/",
-		MapExtensions:     []string{".mp4", ".vtt", ".srt"},
 		MapExtraPrefixes:  []string{"subtitles/", "mp4s/"},
+		MapRegexFilter:    `\d{3,4}p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
 		ProxyLogHeaders:   []string{"Accept", "Range"},
 		ProxyTimeout:      20 * time.Second,
 		ProxyBucketOnPath: true,
@@ -100,30 +100,6 @@ func TestConfigLoggerInvalidLevel(t *testing.T) {
 	}
 	if logger.Level != logrus.DebugLevel {
 		t.Errorf("wrong log leve, want DebugLevel (%v), got %v", logrus.DebugLevel, logger.Level)
-	}
-}
-
-func TestConfigCheckExtension(t *testing.T) {
-	config := Config{
-		MapExtensions: []string{".vtt", ".mp4"},
-	}
-	var tests = []struct {
-		input  string
-		output bool
-	}{
-		{".vtt", true},
-		{".mp4", true},
-		{".mp", false},
-		{"mp4", false},
-		{"vtt", false},
-	}
-	for _, test := range tests {
-		t.Run(test.input, func(t *testing.T) {
-			r := config.checkExtension(test.input)
-			if r != test.output {
-				t.Errorf("config.checkExtension(%q): expected %v, got %v", test.input, test.output, r)
-			}
-		})
 	}
 }
 

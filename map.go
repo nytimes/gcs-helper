@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"path"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"cloud.google.com/go/storage"
@@ -95,8 +96,9 @@ func expandPrefix(prefix string, config Config, bucketHandle *storage.BucketHand
 		sequences := []sequence{}
 		obj, err = iter.Next()
 		for ; err == nil; obj, err = iter.Next() {
-			ext := filepath.Ext(obj.Name)
-			if config.checkExtension(ext) {
+			filename := filepath.Base(obj.Name)
+			matched, _ := regexp.MatchString(config.MapRegexFilter, filename)
+			if matched {
 				sequences = append(sequences, sequence{
 					Clips: []clip{{Type: "source", Path: "/" + obj.Bucket + "/" + obj.Name}},
 				})

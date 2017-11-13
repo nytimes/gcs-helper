@@ -20,7 +20,7 @@ type Config struct {
 	ProxyBucketOnPath   bool          `envconfig:"PROXY_BUCKET_ON_PATH"`
 	MapPrefix           string        `envconfig:"MAP_PREFIX"`
 	ExtraResourcesToken string        `envconfig:"EXTRA_RESOURCES_TOKEN"`
-	MapExtensions       []string      `envconfig:"MAP_EXTENSIONS"`
+	MapRegexFilter      string        `envconfig:"MAP_REGEX_FILTER"`
 	MapExtraPrefixes    []string      `envconfig:"MAP_EXTRA_PREFIXES"`
 	ClientConfig        ClientConfig
 }
@@ -32,15 +32,6 @@ type ClientConfig struct {
 	Timeout         time.Duration `envconfig:"GCS_CLIENT_TIMEOUT" default:"2s"`
 	IdleConnTimeout time.Duration `envconfig:"GCS_CLIENT_IDLE_CONN_TIMEOUT" default:"120s"`
 	MaxIdleConns    int           `envconfig:"GCS_CLIENT_MAX_IDLE_CONNS" default:"10"`
-}
-
-func (c Config) checkExtension(ext string) bool {
-	for _, e := range c.MapExtensions {
-		if e == ext {
-			return true
-		}
-	}
-	return false
 }
 
 func (c Config) logger() *logrus.Logger {

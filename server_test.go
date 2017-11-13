@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/fsouza/fake-gcs-server/fakestorage"
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestServerMultiPrefixes(t *testing.T) {
@@ -20,7 +21,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 		ExtraResourcesToken: "extra",
 		ProxyPrefix:         "/proxy/",
 		ProxyTimeout:        time.Second,
-		MapExtensions:       []string{".mp3", ".txt", ".mp4", ".srt"},
+		MapRegexFilter:      `\d{3,4}p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
 	})
 	defer cleanup()
 	var tests = []serverTest{
@@ -66,7 +67,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 		{
 			testCase:       "map: list of files",
 			method:         http.MethodGet,
-			addr:           addr + "/map/musics/music/mu",
+			addr:           addr + "/map/videos/video/",
 			expectedStatus: http.StatusOK,
 			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
 			expectedBody: map[string]interface{}{
@@ -75,7 +76,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/my-bucket/musics/music/music1.txt",
+								"path": "/my-bucket/videos/video/28043_1_video_1080p.mp4",
 							},
 						},
 					},
@@ -83,7 +84,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/my-bucket/musics/music/music2.txt",
+								"path": "/my-bucket/videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.srt",
 							},
 						},
 					},
@@ -91,29 +92,10 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/my-bucket/musics/music/music3.txt",
+								"path": "/my-bucket/videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.vtt",
 							},
 						},
 					},
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/my-bucket/musics/music/music4.mp3",
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			testCase:       "map: list of files including extra prefixes",
-			method:         http.MethodGet,
-			addr:           addr + "/map/videos/video/video1",
-			expectedStatus: http.StatusOK,
-			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
-			expectedBody: map[string]interface{}{
-				"sequences": []interface{}{
 					map[string]interface{}{
 						"clips": []interface{}{
 							map[string]interface{}{
@@ -127,14 +109,6 @@ func TestServerMultiPrefixes(t *testing.T) {
 							map[string]interface{}{
 								"type": "source",
 								"path": "/my-bucket/videos/video/video1_720p.mp4",
-							},
-						},
-					},
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/my-bucket/subs/video1.srt",
 							},
 						},
 					},
@@ -227,6 +201,7 @@ func (st *serverTest) run(t *testing.T) {
 			t.Fatal(err)
 		}
 		if !reflect.DeepEqual(body, st.expectedBody) {
+			t.Log(cmp.Diff(body, st.expectedBody))
 			t.Errorf("wrong body returned\nwant %#v\ngot  %#v", st.expectedBody, body)
 		}
 	}
@@ -310,6 +285,18 @@ func getObjects() []fakestorage.Object {
 			BucketName: "your-bucket",
 			Name:       "musics/music/music3.txt",
 			Content:    []byte("wait what"),
+		},
+		{
+			BucketName: "my-bucket",
+			Name:       "videos/video/28043_1_video_1080p.mp4",
+		},
+		{
+			BucketName: "my-bucket",
+			Name:       "videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.vtt",
+		},
+		{
+			BucketName: "my-bucket",
+			Name:       "videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.srt",
 		},
 	}
 }
