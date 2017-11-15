@@ -113,7 +113,8 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 		ProxyPrefix:         "/proxy/",
 		ProxyBucketOnPath:   true,
 		ProxyTimeout:        time.Second,
-		MapRegexFilter:      `\d{3,4}p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+		MapRegexFilter:      `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+		MapRegexHDFilter:    `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
 	})
 	defer cleanup()
 	var tests = []serverTest{

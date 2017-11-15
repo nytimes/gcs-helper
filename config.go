@@ -21,6 +21,7 @@ type Config struct {
 	MapPrefix           string        `envconfig:"MAP_PREFIX"`
 	ExtraResourcesToken string        `envconfig:"EXTRA_RESOURCES_TOKEN"`
 	MapRegexFilter      string        `envconfig:"MAP_REGEX_FILTER"`
+	MapRegexHDFilter    string        `envconfig:"MAP_REGEX_HD_FILTER"`
 	MapExtraPrefixes    []string      `envconfig:"MAP_EXTRA_PREFIXES"`
 	ClientConfig        ClientConfig
 }

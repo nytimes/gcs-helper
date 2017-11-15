@@ -87,6 +87,13 @@ func getPrefixes(originalPrefix string, config Config) []string {
 
 func expandPrefix(prefix string, config Config, bucketHandle *storage.BucketHandle) ([]sequence, error) {
 	var err error
+	var filterRegex string
+	if strings.Contains(prefix, "__HD") {
+		filterRegex = config.MapRegexHDFilter
+		prefix = strings.Replace(prefix, "__HD", "", 1)
+	} else {
+		filterRegex = config.MapRegexFilter
+	}
 	for i := 0; i < maxTry; i++ {
 		iter := bucketHandle.Objects(context.Background(), &storage.Query{
 			Prefix:    prefix,
@@ -97,7 +104,7 @@ func expandPrefix(prefix string, config Config, bucketHandle *storage.BucketHand
 		obj, err = iter.Next()
 		for ; err == nil; obj, err = iter.Next() {
 			filename := filepath.Base(obj.Name)
-			matched, _ := regexp.MatchString(config.MapRegexFilter, filename)
+			matched, _ := regexp.MatchString(filterRegex, filename)
 			if matched {
 				sequences = append(sequences, sequence{
 					Clips: []clip{{Type: "source", Path: "/" + obj.Bucket + "/" + obj.Name}},
