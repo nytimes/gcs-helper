@@ -21,7 +21,8 @@ func TestServerMultiPrefixes(t *testing.T) {
 		ExtraResourcesToken: "extra",
 		ProxyPrefix:         "/proxy/",
 		ProxyTimeout:        time.Second,
-		MapRegexFilter:      `\d{3,4}p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+		MapRegexFilter:      `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+		MapRegexHDFilter:    `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
 	})
 	defer cleanup()
 	var tests = []serverTest{
@@ -109,6 +110,57 @@ func TestServerMultiPrefixes(t *testing.T) {
 							map[string]interface{}{
 								"type": "source",
 								"path": "/my-bucket/videos/video/video1_720p.mp4",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testCase:       "map: list of HD files",
+			method:         http.MethodGet,
+			addr:           addr + "/map/videos/video/__HD",
+			expectedStatus: http.StatusOK,
+			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
+			expectedBody: map[string]interface{}{
+				"sequences": []interface{}{
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/my-bucket/videos/video/28043_1_video_1080p.mp4",
+							},
+						},
+					},
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/my-bucket/videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.srt",
+							},
+						},
+					},
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/my-bucket/videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.vtt",
+							},
+						},
+					},
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/my-bucket/videos/video/video1_720p.mp4",
+							},
+						},
+					},
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/my-bucket/subs/video1.srt",
 							},
 						},
 					},
