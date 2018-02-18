@@ -10,7 +10,7 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 go:
-  - 1.9
+  - "1.10"
   - tip
 matrix:
   allow_failures:
