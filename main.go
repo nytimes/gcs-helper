@@ -14,7 +14,7 @@ import (
 	"google.golang.org/api/option"
 )
 
-const version = "1.13"
+const version = "1.13.1"
 
 func main() {
 	handleFlags()
