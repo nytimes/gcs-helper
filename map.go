@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"path"
-	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -103,7 +102,7 @@ func expandPrefix(prefix string, config Config, bucketHandle *storage.BucketHand
 		sequences := []sequence{}
 		obj, err = iter.Next()
 		for ; err == nil; obj, err = iter.Next() {
-			filename := filepath.Base(obj.Name)
+			filename := path.Base(obj.Name)
 			matched, _ := regexp.MatchString(filterRegex, filename)
 			if matched {
 				sequences = append(sequences, sequence{
