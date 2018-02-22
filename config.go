@@ -17,12 +17,13 @@ type Config struct {
 	ProxyLogHeaders     []string      `envconfig:"PROXY_LOG_HEADERS"`
 	ProxyPrefix         string        `envconfig:"PROXY_PREFIX"`
 	ProxyTimeout        time.Duration `envconfig:"PROXY_TIMEOUT" default:"10s"`
-	ProxyBucketOnPath   bool          `envconfig:"PROXY_BUCKET_ON_PATH"`
 	MapPrefix           string        `envconfig:"MAP_PREFIX"`
 	ExtraResourcesToken string        `envconfig:"EXTRA_RESOURCES_TOKEN"`
 	MapRegexFilter      string        `envconfig:"MAP_REGEX_FILTER"`
 	MapRegexHDFilter    string        `envconfig:"MAP_REGEX_HD_FILTER"`
 	MapExtraPrefixes    []string      `envconfig:"MAP_EXTRA_PREFIXES"`
+	MapExtensionSplit   bool          `envconfig:"MAP_EXTENSION_SPLIT"`
+	ProxyBucketOnPath   bool          `envconfig:"PROXY_BUCKET_ON_PATH"`
 	ClientConfig        ClientConfig
 }
 
