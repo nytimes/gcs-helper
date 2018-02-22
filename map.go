@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -34,12 +35,17 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
+		var ext string
 		prefix := strings.TrimLeft(r.URL.Path, "/")
+		if c.MapExtensionSplit {
+			ext = filepath.Ext(prefix)
+			prefix = prefix[:len(prefix)-len(ext)]
+		}
 		if prefix == "" {
 			http.Error(w, "prefix cannot be empty", http.StatusBadRequest)
 			return
 		}
-		m, err := getPrefixMapping(prefix, c, bucketHandle)
+		m, err := getPrefixMapping(prefix, ext, c, bucketHandle)
 		if err != nil && err != iterator.Done {
 			logger.WithError(err).WithField("prefix", prefix).Error("failed to map request")
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -63,10 +69,10 @@ func appendExtraResources(r *http.Request, config Config, m mapping) mapping {
 	return m
 }
 
-func getPrefixMapping(prefix string, config Config, bucketHandle *storage.BucketHandle) (mapping, error) {
+func getPrefixMapping(prefix, ext string, config Config, bucketHandle *storage.BucketHandle) (mapping, error) {
 	m := mapping{Sequences: []sequence{}}
 	for _, p := range getPrefixes(prefix, config) {
-		sequences, err := expandPrefix(p, config, bucketHandle)
+		sequences, err := expandPrefix(p, ext, config, bucketHandle)
 		if err != nil {
 			return m, err
 		}
@@ -84,12 +90,14 @@ func getPrefixes(originalPrefix string, config Config) []string {
 	return prefixes
 }
 
-func expandPrefix(prefix string, config Config, bucketHandle *storage.BucketHandle) ([]sequence, error) {
+func expandPrefix(prefix, ext string, config Config, bucketHandle *storage.BucketHandle) ([]sequence, error) {
 	var err error
 	var filterRegex string
 	if strings.Contains(prefix, "__HD") {
 		filterRegex = config.MapRegexHDFilter
 		prefix = strings.Replace(prefix, "__HD", "", 1)
+	} else if ext != "" {
+		filterRegex = regexp.QuoteMeta(ext) + "$"
 	} else {
 		filterRegex = config.MapRegexFilter
 	}

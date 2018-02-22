@@ -21,8 +21,9 @@ func TestServerMultiPrefixes(t *testing.T) {
 		ExtraResourcesToken: "extra",
 		ProxyPrefix:         "/proxy/",
 		ProxyTimeout:        time.Second,
-		MapRegexFilter:      `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+		MapRegexFilter:      `((240|360|424|480|720|1080)p\.mp4)|\.(vtt|srt)$`,
 		MapRegexHDFilter:    `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+		MapExtensionSplit:   true,
 	})
 	defer cleanup()
 	var tests = []serverTest{
@@ -110,6 +111,25 @@ func TestServerMultiPrefixes(t *testing.T) {
 							map[string]interface{}{
 								"type": "source",
 								"path": "/my-bucket/videos/video/video1_720p.mp4",
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			testCase:       "map: list of files with extension filter",
+			method:         http.MethodGet,
+			addr:           addr + "/map/videos/video/video1.srt",
+			expectedStatus: http.StatusOK,
+			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
+			expectedBody: map[string]interface{}{
+				"sequences": []interface{}{
+					map[string]interface{}{
+						"clips": []interface{}{
+							map[string]interface{}{
+								"type": "source",
+								"path": "/my-bucket/subs/video1.srt",
 							},
 						},
 					},
