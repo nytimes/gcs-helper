@@ -3,6 +3,7 @@ sudo: false
 install:
   - go get github.com/alecthomas/gometalinter
   - gometalinter --install
+  - go mod vendor
   - go build -i
 script:
   - gometalinter --vendor --disable errcheck --disable gosec --deadline 10m --cyclo-over 15 --tests
@@ -10,7 +11,7 @@ script:
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 go:
-  - 1.10.x
+  - 1.11.x
   - tip
 matrix:
   allow_failures:
