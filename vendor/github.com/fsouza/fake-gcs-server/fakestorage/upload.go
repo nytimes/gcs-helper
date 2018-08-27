@@ -16,6 +16,9 @@ import (
 	"strconv"
 	"strings"
 
+	"encoding/base64"
+	"hash/crc32"
+
 	"github.com/gorilla/mux"
 )
 
@@ -27,7 +30,7 @@ func (s *Server) insertObject(w http.ResponseWriter, r *http.Request) {
 	s.mtx.Lock()
 	defer s.mtx.Unlock()
 	bucketName := mux.Vars(r)["bucketName"]
-	if _, ok := s.buckets[bucketName]; !ok {
+	if err := s.backend.GetBucket(bucketName); err != nil {
 		w.WriteHeader(http.StatusNotFound)
 		err := newErrorResponse(http.StatusNotFound, "Not found", nil)
 		json.NewEncoder(w).Encode(err)
@@ -58,10 +61,30 @@ func (s *Server) simpleUpload(bucketName string, w http.ResponseWriter, r *http.
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	obj := Object{BucketName: bucketName, Name: name, Content: data}
-	s.createObject(obj)
+	obj := Object{BucketName: bucketName, Name: name, Content: data, Crc32c: encodedCrc32cChecksum(data)}
+	err = s.createObject(obj)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(obj)
+}
+
+var crc32cTable = crc32.MakeTable(crc32.Castagnoli)
+
+func crc32cChecksum(content []byte) []byte {
+	checksummer := crc32.New(crc32cTable)
+	checksummer.Write(content)
+	return checksummer.Sum(make([]byte, 0, 4))
+}
+
+func encodedChecksum(checksum []byte) string {
+	return base64.StdEncoding.EncodeToString(checksum)
+}
+
+func encodedCrc32cChecksum(content []byte) string {
+	return encodedChecksum(crc32cChecksum(content))
 }
 
 func (s *Server) multipartUpload(bucketName string, w http.ResponseWriter, r *http.Request) {
@@ -91,8 +114,12 @@ func (s *Server) multipartUpload(bucketName string, w http.ResponseWriter, r *ht
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	obj := Object{BucketName: bucketName, Name: metadata.Name, Content: content}
-	s.createObject(obj)
+	obj := Object{BucketName: bucketName, Name: metadata.Name, Content: content, Crc32c: encodedCrc32cChecksum(content)}
+	err = s.createObject(obj)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(obj)
 }
@@ -137,6 +164,7 @@ func (s *Server) uploadFileContent(w http.ResponseWriter, r *http.Request) {
 	status := http.StatusCreated
 	objLength := len(obj.Content)
 	obj.Content = append(obj.Content, content...)
+	obj.Crc32c = encodedCrc32cChecksum(obj.Content)
 	if contentRange := r.Header.Get("Content-Range"); contentRange != "" {
 		commit, err = parseRange(contentRange, objLength, len(content), w)
 		if err != nil {
@@ -146,7 +174,11 @@ func (s *Server) uploadFileContent(w http.ResponseWriter, r *http.Request) {
 	}
 	if commit {
 		delete(s.uploads, uploadID)
-		s.createObject(obj)
+		err = s.createObject(obj)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
 	} else {
 		status = http.StatusOK
 		w.Header().Set("X-Http-Status-Code-Override", "308")
