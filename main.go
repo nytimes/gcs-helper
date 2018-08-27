@@ -12,13 +12,14 @@ import (
 	"cloud.google.com/go/storage"
 	"github.com/google/gops/agent"
 	"google.golang.org/api/option"
+	ghttp "google.golang.org/api/transport/http"
 )
 
 const version = "1.14.0"
 
 func main() {
 	handleFlags()
-	err := agent.Listen(&agent.Options{NoShutdownCleanup: true})
+	err := agent.Listen(agent.Options{})
 	if err != nil {
 		log.Fatalf("could not start gops agent: %v", err)
 	}
@@ -28,7 +29,11 @@ func main() {
 		log.Fatal(err)
 	}
 	logger := config.logger()
-	client, err := storage.NewClient(context.Background(), option.WithHTTPClient(httpClient(config.ClientConfig)))
+	hc, err := httpClient(config.ClientConfig)
+	if err != nil {
+		logger.WithError(err).Fatal("failed to initialize http client")
+	}
+	client, err := storage.NewClient(context.Background(), option.WithHTTPClient(hc))
 	if err != nil {
 		logger.WithError(err).Fatal("failed to create storage client instance")
 	}
@@ -45,14 +50,16 @@ func main() {
 	}
 }
 
-func httpClient(c ClientConfig) *http.Client {
-	return &http.Client{
-		Timeout: c.Timeout,
-		Transport: &http.Transport{
-			IdleConnTimeout: c.IdleConnTimeout,
-			MaxIdleConns:    c.MaxIdleConns,
-		},
+func httpClient(c ClientConfig) (*http.Client, error) {
+	baseTransport := http.Transport{
+		IdleConnTimeout: c.IdleConnTimeout,
+		MaxIdleConns:    c.MaxIdleConns,
 	}
+	transport, err := ghttp.NewTransport(context.Background(), &baseTransport)
+	return &http.Client{
+		Timeout:   c.Timeout,
+		Transport: transport,
+	}, err
 }
 
 func handleFlags() {
