@@ -7,12 +7,13 @@ gcs-helper is inspired by
 [s3-helper](https://github.com/crunchyroll/evs-s3helper) and is used to provide
 access to private GCS buckets.
 
-It's intended to be deployed along with [Kaltura's
-nginx-vod-module](https://github.com/kaltura/nginx-vod-module).
+It was designed to be used with [Kaltura's
+nginx-vod-module](https://github.com/kaltura/nginx-vod-module), but it can work
+stand-alone too, specially the proxy feature.
 
-It also provides the needed support for the mapped mode (when using the proper
-environment variables - ``GCS_HELPER_PROXY_PREFIX``, ``GCS_HELPER_MAP_PREFIX``
-and ``GCS_HELPER_MAP_REGEX_FILTER``).
+Specific to nginx-vod-module, gcs-helper provides support for the mapped mode
+(when using the proper environment variables - ``GCS_HELPER_PROXY_PREFIX``,
+``GCS_HELPER_MAP_PREFIX`` and ``GCS_HELPER_MAP_REGEX_FILTER``).
 
 ## Configuration
 
