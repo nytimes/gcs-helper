@@ -1,4 +1,4 @@
-FROM linuxkit/ca-certificates:v0.4 AS ca-certificates
+FROM linuxkit/ca-certificates:v0.6 AS ca-certificates
 
 FROM    golang:1.11-alpine AS build
 ENV     CGO_ENABLED 0
