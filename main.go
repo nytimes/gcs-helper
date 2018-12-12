@@ -15,7 +15,7 @@ import (
 	ghttp "google.golang.org/api/transport/http"
 )
 
-const version = "1.15.1"
+const version = "1.15.2"
 
 func main() {
 	handleFlags()
