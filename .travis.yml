@@ -2,8 +2,6 @@ language: go
 sudo: false
 install:
   - go get golang.org/x/lint/golint
-  - go mod vendor
-  - go build -i
   - golint -set_exit_status
 script:
   - go test -coverprofile=coverage.txt -covermode=atomic -race
