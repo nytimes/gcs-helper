@@ -32,19 +32,23 @@ func TestLoadConfig(t *testing.T) {
 		t.Fatal(err)
 	}
 	expectedConfig := Config{
-		BucketName:        "some-bucket",
-		Listen:            "0.0.0.0:3030",
-		LogLevel:          "info",
-		MapPrefix:         "/map/",
-		ProxyPrefix:       "/proxy/",
-		MapExtraPrefixes:  []string{"subtitles/", "mp4s/"},
-		MapRegexFilter:    `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
-		MapRegexHDFilter:  `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
-		MapExtensionSplit: true,
-		ProxyLogHeaders:   []string{"Accept", "Range"},
-		ProxyTimeout:      20 * time.Second,
-		ProxyBucketOnPath: true,
-		ClientConfig: ClientConfig{
+		BucketName: "some-bucket",
+		Listen:     "0.0.0.0:3030",
+		LogLevel:   "info",
+		Proxy: ProxyConfig{
+			Endpoint:     "/proxy/",
+			LogHeaders:   []string{"Accept", "Range"},
+			Timeout:      20 * time.Second,
+			BucketOnPath: true,
+		},
+		Map: MapConfig{
+			Endpoint:       "/map/",
+			ExtraPrefixes:  []string{"subtitles/", "mp4s/"},
+			RegexFilter:    `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+			RegexHDFilter:  `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+			ExtensionSplit: true,
+		},
+		Client: ClientConfig{
 			IdleConnTimeout: 3 * time.Minute,
 			MaxIdleConns:    16,
 			Timeout:         time.Minute,
@@ -62,11 +66,13 @@ func TestLoadConfigDefaultValues(t *testing.T) {
 		t.Fatal(err)
 	}
 	expectedConfig := Config{
-		BucketName:   "some-bucket",
-		Listen:       ":8080",
-		LogLevel:     "debug",
-		ProxyTimeout: 10 * time.Second,
-		ClientConfig: ClientConfig{
+		BucketName: "some-bucket",
+		Listen:     ":8080",
+		LogLevel:   "debug",
+		Proxy: ProxyConfig{
+			Timeout: 10 * time.Second,
+		},
+		Client: ClientConfig{
 			IdleConnTimeout: 120 * time.Second,
 			MaxIdleConns:    10,
 			Timeout:         2 * time.Second,

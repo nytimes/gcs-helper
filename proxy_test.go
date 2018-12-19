@@ -8,9 +8,11 @@ import (
 
 func TestServerProxyOnly(t *testing.T) {
 	addr, cleanup := startServer(t, Config{
-		BucketName:      "my-bucket",
-		ProxyLogHeaders: []string{"Accept", "User-Agent", "Range"},
-		ProxyTimeout:    time.Second,
+		BucketName: "my-bucket",
+		Proxy: ProxyConfig{
+			LogHeaders: []string{"Accept", "User-Agent", "Range"},
+			Timeout:    time.Second,
+		},
 	})
 	defer cleanup()
 	var tests = []serverTest{
@@ -106,15 +108,19 @@ func TestServerProxyOnly(t *testing.T) {
 
 func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 	addr, cleanup := startServer(t, Config{
-		BucketName:          "my-bucket",
-		MapPrefix:           "/map/",
-		MapExtraPrefixes:    []string{"subs/", "mp4s/"},
-		ExtraResourcesToken: "extra",
-		ProxyPrefix:         "/proxy/",
-		ProxyBucketOnPath:   true,
-		ProxyTimeout:        time.Second,
-		MapRegexFilter:      `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
-		MapRegexHDFilter:    `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+		BucketName: "my-bucket",
+		Map: MapConfig{
+			Endpoint:            "/map/",
+			ExtraPrefixes:       []string{"subs/", "mp4s/"},
+			ExtraResourcesToken: "extra",
+			RegexFilter:         `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+			RegexHDFilter:       `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+		},
+		Proxy: ProxyConfig{
+			Endpoint:     "/proxy/",
+			BucketOnPath: true,
+			Timeout:      time.Second,
+		},
 	})
 	defer cleanup()
 	var tests = []serverTest{
@@ -143,7 +149,7 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 }
 
 func TestServerProxyHandlerBucketNotFound(t *testing.T) {
-	addr, cleanup := startServer(t, Config{BucketName: "some-bucket", ProxyTimeout: time.Second})
+	addr, cleanup := startServer(t, Config{BucketName: "some-bucket", Proxy: ProxyConfig{Timeout: time.Second}})
 	defer cleanup()
 	req, _ := http.NewRequest(http.MethodHead, addr+"/whatever", nil)
 	resp, err := http.DefaultClient.Do(req)

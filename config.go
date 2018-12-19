@@ -11,20 +11,30 @@ import (
 // Config represents the gcs-helper configuration that is loaded from the
 // environment.
 type Config struct {
-	Listen              string        `default:":8080"`
-	BucketName          string        `envconfig:"BUCKET_NAME" required:"true"`
-	LogLevel            string        `envconfig:"LOG_LEVEL" default:"debug"`
-	ProxyLogHeaders     []string      `envconfig:"PROXY_LOG_HEADERS"`
-	ProxyPrefix         string        `envconfig:"PROXY_PREFIX"`
-	ProxyTimeout        time.Duration `envconfig:"PROXY_TIMEOUT" default:"10s"`
-	MapPrefix           string        `envconfig:"MAP_PREFIX"`
-	ExtraResourcesToken string        `envconfig:"EXTRA_RESOURCES_TOKEN"`
-	MapRegexFilter      string        `envconfig:"MAP_REGEX_FILTER"`
-	MapRegexHDFilter    string        `envconfig:"MAP_REGEX_HD_FILTER"`
-	MapExtraPrefixes    []string      `envconfig:"MAP_EXTRA_PREFIXES"`
-	MapExtensionSplit   bool          `envconfig:"MAP_EXTENSION_SPLIT"`
-	ProxyBucketOnPath   bool          `envconfig:"PROXY_BUCKET_ON_PATH"`
-	ClientConfig        ClientConfig
+	Listen     string `default:":8080"`
+	BucketName string `envconfig:"BUCKET_NAME" required:"true"`
+	LogLevel   string `envconfig:"LOG_LEVEL" default:"debug"`
+	Client     ClientConfig
+	Map        MapConfig
+	Proxy      ProxyConfig
+}
+
+// MapConfig contains configuration for the map mode.
+type MapConfig struct {
+	Endpoint            string   `envconfig:"GCS_HELPER_MAP_PREFIX"`
+	ExtraResourcesToken string   `envconfig:"GCS_HELPER_MAP_EXTRA_RESOURCES_TOKEN"`
+	RegexFilter         string   `envconfig:"GCS_HELPER_MAP_REGEX_FILTER"`
+	RegexHDFilter       string   `envconfig:"GCS_HELPER_MAP_REGEX_HD_FILTER"`
+	ExtraPrefixes       []string `envconfig:"GCS_HELPER_MAP_EXTRA_PREFIXES"`
+	ExtensionSplit      bool     `envconfig:"GCS_HELPER_MAP_EXTENSION_SPLIT"`
+}
+
+// ProxyConfig contains configuration for the proxy mode.
+type ProxyConfig struct {
+	Endpoint     string        `envconfig:"GCS_HELPER_PROXY_PREFIX"`
+	LogHeaders   []string      `envconfig:"GCS_HELPER_PROXY_LOG_HEADERS"`
+	Timeout      time.Duration `envconfig:"GCS_HELPER_PROXY_TIMEOUT" default:"10s"`
+	BucketOnPath bool          `envconfig:"GCS_HELPER_PROXY_BUCKET_ON_PATH"`
 }
 
 // ClientConfig contains configuration for the GCS client communication.

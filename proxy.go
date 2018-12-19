@@ -40,7 +40,7 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 			return
 		}
 		resp := codeWrapper{ResponseWriter: w}
-		ctx, cancel := context.WithTimeout(context.Background(), c.ProxyTimeout)
+		ctx, cancel := context.WithTimeout(context.Background(), c.Proxy.Timeout)
 		defer cancel()
 		obj := objectHandle(&c, client, r)
 		var err error
@@ -54,13 +54,13 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 
 		if err != nil || logger.Level <= logrus.DebugLevel {
 			fields := logrus.Fields{
-				"method":      r.Method,
-				"ellapsed":    time.Since(start).String(),
-				"url":         r.URL.RequestURI(),
-				"proxyPrefix": c.ProxyPrefix,
-				"response":    resp.code,
+				"method":        r.Method,
+				"ellapsed":      time.Since(start).String(),
+				"url":           r.URL.RequestURI(),
+				"proxyEndpoint": c.Proxy.Endpoint,
+				"response":      resp.code,
 			}
-			for _, header := range c.ProxyLogHeaders {
+			for _, header := range c.Proxy.LogHeaders {
 				if value := r.Header.Get(header); value != "" {
 					fields["ReqHeader/"+header] = value
 				}
@@ -164,7 +164,7 @@ func handleObjectError(err error, w http.ResponseWriter) error {
 func objectHandle(c *Config, client *storage.Client, r *http.Request) *storage.ObjectHandle {
 	bucketName := c.BucketName
 	objectName := strings.TrimLeft(r.URL.Path, "/")
-	if c.ProxyBucketOnPath {
+	if c.Proxy.BucketOnPath {
 		pos := strings.Index(objectName, "/")
 		bucketName = objectName[:pos]
 		objectName = objectName[pos+1:]

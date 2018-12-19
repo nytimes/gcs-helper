@@ -15,15 +15,19 @@ import (
 
 func TestServerMultiPrefixes(t *testing.T) {
 	addr, cleanup := startServer(t, Config{
-		BucketName:          "my-bucket",
-		MapPrefix:           "/map/",
-		MapExtraPrefixes:    []string{"subs/", "mp4s/"},
-		ExtraResourcesToken: "extra",
-		ProxyPrefix:         "/proxy/",
-		ProxyTimeout:        time.Second,
-		MapRegexFilter:      `((240|360|424|480|720|1080)p\.mp4)|\.(vtt|srt)$`,
-		MapRegexHDFilter:    `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
-		MapExtensionSplit:   true,
+		BucketName: "my-bucket",
+		Map: MapConfig{
+			Endpoint:            "/map/",
+			ExtraPrefixes:       []string{"subs/", "mp4s/"},
+			ExtraResourcesToken: "extra",
+			RegexFilter:         `((240|360|424|480|720|1080)p\.mp4)|\.(vtt|srt)$`,
+			RegexHDFilter:       `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+			ExtensionSplit:      true,
+		},
+		Proxy: ProxyConfig{
+			Endpoint: "/proxy/",
+			Timeout:  time.Second,
+		},
 	})
 	defer cleanup()
 	var tests = []serverTest{

@@ -29,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 	logger := config.logger()
-	hc, err := httpClient(config.ClientConfig)
+	hc, err := httpClient(config.Client)
 	if err != nil {
 		logger.WithError(err).Fatal("failed to initialize http client")
 	}

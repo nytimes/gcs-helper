@@ -37,7 +37,7 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 		}
 		var ext string
 		prefix := strings.TrimLeft(r.URL.Path, "/")
-		if c.MapExtensionSplit {
+		if c.Map.ExtensionSplit {
 			ext = filepath.Ext(prefix)
 			prefix = prefix[:len(prefix)-len(ext)]
 		}
@@ -58,7 +58,7 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 }
 
 func appendExtraResources(r *http.Request, config Config, m mapping) mapping {
-	resources := r.URL.Query().Get(config.ExtraResourcesToken)
+	resources := r.URL.Query().Get(config.Map.ExtraResourcesToken)
 	for _, resource := range strings.Split(resources, ",") {
 		if resource != "" {
 			m.Sequences = append(m.Sequences, sequence{
@@ -84,7 +84,7 @@ func getPrefixMapping(prefix, ext string, config Config, bucketHandle *storage.B
 func getPrefixes(originalPrefix string, config Config) []string {
 	prefixes := []string{originalPrefix}
 	_, lastPart := path.Split(originalPrefix)
-	for _, p := range config.MapExtraPrefixes {
+	for _, p := range config.Map.ExtraPrefixes {
 		prefixes = append(prefixes, path.Join(p, lastPart))
 	}
 	return prefixes
@@ -94,12 +94,12 @@ func expandPrefix(prefix, ext string, config Config, bucketHandle *storage.Bucke
 	var err error
 	var filterRegex string
 	if strings.Contains(prefix, "__HD") {
-		filterRegex = config.MapRegexHDFilter
+		filterRegex = config.Map.RegexHDFilter
 		prefix = strings.Replace(prefix, "__HD", "", 1)
 	} else if ext != "" {
 		filterRegex = regexp.QuoteMeta(ext) + "$"
 	} else {
-		filterRegex = config.MapRegexFilter
+		filterRegex = config.Map.RegexFilter
 	}
 	for i := 0; i < maxTry; i++ {
 		iter := bucketHandle.Objects(context.Background(), &storage.Query{
