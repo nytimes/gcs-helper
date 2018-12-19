@@ -20,9 +20,11 @@ func TestServerMultiPrefixes(t *testing.T) {
 			Endpoint:            "/map/",
 			ExtraPrefixes:       []string{"subs/", "mp4s/"},
 			ExtraResourcesToken: "extra",
-			RegexFilter:         `((240|360|424|480|720|1080)p\.mp4)|\.(vtt|srt)$`,
-			RegexHDFilter:       `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
-			ExtensionSplit:      true,
+			RegexFilters: map[string]string{
+				"":     `((240|360|424|480|720|1080)p\.mp4)|\.(vtt|srt)$`,
+				"__HD": `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+			},
+			ExtensionSplit: true,
 		},
 		Proxy: ProxyConfig{
 			Endpoint: "/proxy/",

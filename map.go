@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"github.com/NYTimes/gcs-helper/internal/regexpcache"
 	"google.golang.org/api/iterator"
 )
 
@@ -92,15 +93,8 @@ func getPrefixes(originalPrefix string, config Config) []string {
 
 func expandPrefix(prefix, ext string, config Config, bucketHandle *storage.BucketHandle) ([]sequence, error) {
 	var err error
-	var filterRegex string
-	if strings.Contains(prefix, "__HD") {
-		filterRegex = config.Map.RegexHDFilter
-		prefix = strings.Replace(prefix, "__HD", "", 1)
-	} else if ext != "" {
-		filterRegex = regexp.QuoteMeta(ext) + "$"
-	} else {
-		filterRegex = config.Map.RegexFilter
-	}
+	var filterRegex *regexp.Regexp
+	prefix, filterRegex = filterRegexp(prefix, ext, config)
 	for i := 0; i < maxTry; i++ {
 		iter := bucketHandle.Objects(context.Background(), &storage.Query{
 			Prefix:    prefix,
@@ -111,8 +105,7 @@ func expandPrefix(prefix, ext string, config Config, bucketHandle *storage.Bucke
 		obj, err = iter.Next()
 		for ; err == nil; obj, err = iter.Next() {
 			filename := path.Base(obj.Name)
-			matched, _ := regexp.MatchString(filterRegex, filename)
-			if matched {
+			if filterRegex.MatchString(filename) {
 				sequences = append(sequences, sequence{
 					Clips: []clip{{Type: "source", Path: "/" + obj.Bucket + "/" + obj.Name}},
 				})
@@ -123,4 +116,21 @@ func expandPrefix(prefix, ext string, config Config, bucketHandle *storage.Bucke
 		}
 	}
 	return nil, err
+}
+
+func filterRegexp(prefix, ext string, config Config) (string, *regexp.Regexp) {
+	if ext != "" {
+		return prefix, regexpcache.MustCompile(regexp.QuoteMeta(ext) + "$")
+	}
+
+	var filterRegexp, bestMatch string
+	for fragment, re := range config.Map.RegexFilters {
+		if strings.HasSuffix(prefix, fragment) && len(fragment) >= len(bestMatch) {
+			bestMatch = fragment
+			filterRegexp = re
+		}
+	}
+
+	prefix = regexpcache.MustCompile(regexp.QuoteMeta(bestMatch)+"$").ReplaceAllString(prefix, "")
+	return prefix, regexpcache.MustCompile(filterRegexp)
 }

@@ -19,8 +19,7 @@ func TestLoadConfig(t *testing.T) {
 		"GCS_HELPER_PROXY_LOG_HEADERS":    "Accept,Range",
 		"GCS_HELPER_PROXY_TIMEOUT":        "20s",
 		"GCS_HELPER_PROXY_BUCKET_ON_PATH": "true",
-		"GCS_HELPER_MAP_REGEX_FILTER":     `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
-		"GCS_HELPER_MAP_REGEX_HD_FILTER":  `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+		"GCS_HELPER_MAP_REGEX_FILTERS":    `:(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$,__HD:((720|1080)p\.mp4)|(\.(vtt|srt))$`,
 		"GCS_HELPER_MAP_EXTRA_PREFIXES":   "subtitles/,mp4s/",
 		"GCS_HELPER_MAP_EXTENSION_SPLIT":  "true",
 		"GCS_CLIENT_TIMEOUT":              "60s",
@@ -42,10 +41,12 @@ func TestLoadConfig(t *testing.T) {
 			BucketOnPath: true,
 		},
 		Map: MapConfig{
-			Endpoint:       "/map/",
-			ExtraPrefixes:  []string{"subtitles/", "mp4s/"},
-			RegexFilter:    `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
-			RegexHDFilter:  `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+			Endpoint:      "/map/",
+			ExtraPrefixes: []string{"subtitles/", "mp4s/"},
+			RegexFilters: map[string]string{
+				"":     `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+				"__HD": `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
+			},
 			ExtensionSplit: true,
 		},
 		Client: ClientConfig{

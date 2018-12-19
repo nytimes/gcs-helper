@@ -113,8 +113,6 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 			Endpoint:            "/map/",
 			ExtraPrefixes:       []string{"subs/", "mp4s/"},
 			ExtraResourcesToken: "extra",
-			RegexFilter:         `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
-			RegexHDFilter:       `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
 		},
 		Proxy: ProxyConfig{
 			Endpoint:     "/proxy/",
