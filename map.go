@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
-	"github.com/NYTimes/gcs-helper/internal/regexpcache"
+	"github.com/NYTimes/gcs-helper/v2/internal/regexpcache"
 	"google.golang.org/api/iterator"
 )
 

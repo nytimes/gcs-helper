@@ -1,4 +1,4 @@
-module github.com/NYTimes/gcs-helper
+module github.com/NYTimes/gcs-helper/v2
 
 require (
 	cloud.google.com/go v0.34.0
