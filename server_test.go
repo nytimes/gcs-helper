@@ -14,7 +14,7 @@ import (
 )
 
 func TestServerMultiPrefixes(t *testing.T) {
-	addr, cleanup := startServer(t, Config{
+	addr, cleanup := startServer(Config{
 		BucketName: "my-bucket",
 		Map: MapConfig{
 			Endpoint:            "/map/",
@@ -292,7 +292,7 @@ func (st *serverTest) run(t *testing.T) {
 	}
 }
 
-func startServer(t *testing.T, cfg Config) (string, func()) {
+func startServer(cfg Config) (string, func()) {
 	server := fakestorage.NewServer(getObjects())
 	handler := getHandler(cfg, server.Client())
 	httpServer := httptest.NewServer(handler)
