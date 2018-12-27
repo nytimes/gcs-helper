@@ -1,9 +1,10 @@
 language: go
 sudo: false
 install:
-  - go get golang.org/x/lint/golint
-  - golint -set_exit_status
+  - go mod download
+  - go get -v github.com/golangci/golangci-lint/cmd/golangci-lint
 script:
+  - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
   - go test -coverprofile=coverage.txt -covermode=atomic -race ./...
 after_success:
   - bash <(curl -s https://codecov.io/bash)
