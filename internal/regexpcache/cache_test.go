@@ -16,7 +16,7 @@ func TestMustCompile(t *testing.T) {
 
 	other := MustCompile("^ $")
 	if other == re {
-		t.Errorf("poluted cache?")
+		t.Errorf("polluted cache?")
 	}
 }
 
