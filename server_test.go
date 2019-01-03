@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/NYTimes/gcs-helper/v3/vodmodule/testhelper"
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/google/go-cmp/cmp"
 )
@@ -17,14 +18,8 @@ func TestServerMultiPrefixes(t *testing.T) {
 	addr, cleanup := startServer(Config{
 		BucketName: "my-bucket",
 		Map: MapConfig{
-			Endpoint:            "/map/",
-			ExtraPrefixes:       []string{"subs/", "mp4s/"},
-			ExtraResourcesToken: "extra",
-			RegexFilters: map[string]string{
-				"":     `((240|360|424|480|720|1080)p\.mp4)|\.(vtt|srt)$`,
-				"__HD": `((720|1080)p\.mp4)|(\.(vtt|srt))$`,
-			},
-			ExtensionSplit: true,
+			Endpoint:    "/map/",
+			RegexFilter: `((240|360|424|480|720|1080)p\.mp4)|\.(vtt)$`,
 		},
 		Proxy: ProxyConfig{
 			Endpoint: "/proxy/",
@@ -92,14 +87,6 @@ func TestServerMultiPrefixes(t *testing.T) {
 						"clips": []interface{}{
 							map[string]interface{}{
 								"type": "source",
-								"path": "/my-bucket/videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.srt",
-							},
-						},
-					},
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
 								"path": "/my-bucket/videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.vtt",
 							},
 						},
@@ -117,95 +104,6 @@ func TestServerMultiPrefixes(t *testing.T) {
 							map[string]interface{}{
 								"type": "source",
 								"path": "/my-bucket/videos/video/video1_720p.mp4",
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			testCase:       "map: list of files with extension filter",
-			method:         http.MethodGet,
-			addr:           addr + "/map/videos/video/video1.srt",
-			expectedStatus: http.StatusOK,
-			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
-			expectedBody: map[string]interface{}{
-				"sequences": []interface{}{
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/my-bucket/subs/video1.srt",
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			testCase:       "map: list of HD files",
-			method:         http.MethodGet,
-			addr:           addr + "/map/videos/video/__HD",
-			expectedStatus: http.StatusOK,
-			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
-			expectedBody: map[string]interface{}{
-				"sequences": []interface{}{
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/my-bucket/videos/video/28043_1_video_1080p.mp4",
-							},
-						},
-					},
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/my-bucket/videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.srt",
-							},
-						},
-					},
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/my-bucket/videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.vtt",
-							},
-						},
-					},
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/my-bucket/videos/video/video1_720p.mp4",
-							},
-						},
-					},
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/my-bucket/subs/video1.srt",
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			testCase:       "map: extra resources",
-			method:         http.MethodGet,
-			addr:           addr + "/map/musics/musyc?extra=/bucket/file.vtt",
-			expectedStatus: http.StatusOK,
-			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
-			expectedBody: map[string]interface{}{
-				"sequences": []interface{}{
-					map[string]interface{}{
-						"clips": []interface{}{
-							map[string]interface{}{
-								"type": "source",
-								"path": "/bucket/file.vtt",
 							},
 						},
 					},
@@ -293,88 +191,11 @@ func (st *serverTest) run(t *testing.T) {
 }
 
 func startServer(cfg Config) (string, func()) {
-	server := fakestorage.NewServer(getObjects())
+	server := fakestorage.NewServer(testhelper.FakeObjects)
 	handler := getHandler(cfg, server.Client())
 	httpServer := httptest.NewServer(handler)
 	return httpServer.URL, func() {
 		httpServer.Close()
 		server.Stop()
-	}
-}
-
-func getObjects() []fakestorage.Object {
-	return []fakestorage.Object{
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music1.txt",
-			Content:    []byte("some nice music"),
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music2.txt",
-			Content:    []byte("some nicer music"),
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music3.txt",
-			Content:    []byte("some even nicer music"),
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music4.mp3",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music5.wav",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music/1.txt",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music/2.txt",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music/3.txt",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/music/music/4.mp3",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "musics/musics/music1.txt",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "videos/video/video1_720p.mp4",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "videos/video/video1_480p.mp4",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "subs/video1.srt",
-		},
-		{
-			BucketName: "your-bucket",
-			Name:       "musics/music/music3.txt",
-			Content:    []byte("wait what"),
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "videos/video/28043_1_video_1080p.mp4",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.vtt",
-		},
-		{
-			BucketName: "my-bucket",
-			Name:       "videos/video/77071_1_caption_wg_240p_001f8ea7-749b-4d43-7bd5-b357e4e24f32.srt",
-		},
 	}
 }
