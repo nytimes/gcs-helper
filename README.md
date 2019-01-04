@@ -27,10 +27,7 @@ The following environment variables control the behavior of gcs-helper:
 | GCS_HELPER_PROXY_PREFIX          |               | No       | Prefix to use for the proxy binding. Required if running in map and proxy modes (example value: ``/proxy/``)                                                        |
 | GCS_HELPER_PROXY_TIMEOUT         | 10s           | No       | Defines the maximum time in serving the proxy requests, this is a hard timeout and includes retries                                                                    |
 | GCS_HELPER_MAP_PREFIX            |               | No       | Prefix to use for the map binding. Required if running in map and proxy modes (example value: ``/map/``)                                                                |
-| GCS_HELPER_MAP_REGEX_FILTERS     |               | No       | A map (comma separated list of colon separated key:values) of regular expressions. The key represents a suffix to look for within the prefix, and the value represents the regular expression that will be used to filter the returned list. The "key" is always stripped from the prefix before obtaining the list from GCS. An empty string can be used as the key (replacing the ``GCS_HELPER_MAP_REGEX_FILTER`` config variable from v1). Example value: ``:\d{3}p(\.mp4\|[a-z0-9_-]{37}\.(vtt\|srt))$,__HD:(1080|1440|2160)p\.mp4$``|
-| GCS_HELPER_EXTRA_RESOURCES_TOKEN |               |          | Token to be used as query string parameter on the map location to pass extra resources to the mapping                                                                  |
-| GCS_HELPER_MAP_EXTRA_PREFIXES    |               | No       | Comma separated list of prefixes that allow gcs-helper to lookup files in different paths                                                                              |
-| GCS_HELPER_MAP_EXTENSION_SPLIT   | false         | No       | Boolean flag that indicates whether extensions in the path should be stripped from the prefix and used as a suffix                                                     |
+| GCS_HELPER_MAP_REGEX_FILTER      |               | No       | A regular expression that is used to deliver only those files that match the specified naming convention (example value: \d{3,4}p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$) |
 
 The are also some configuration variables for network communication with Google
 Cloud Storage API:
@@ -50,12 +47,3 @@ and ``GCS_CLIENT_TIMEOUT`` controls how long requests from gcs-helper to
 Google's API can take. Since gcs-helper automatically retries on failures, the
 number of retries is roughly the value of ``GCS_HELPER_PROXY_TIMEOUT`` divided
 by the value of ``GCS_CLIENT_TIMEOUT``.
-
-### GCS_HELPER_EXTRA_RESOURCES_TOKEN
-
-The extra resources token is the query string parameter that the mapping location
-will look for to add external resources to the JSON output.
-
-For example, giving that you set `GCS_HELPER_EXTRA_RESOURCES_TOKEN` to `extras`,
-you'll be able to add videos and captions files that are in different bucket
-by calling the map location with `?extras=/bucket-1/file.mp4,/bucket-2/pt-br.vtt`.
