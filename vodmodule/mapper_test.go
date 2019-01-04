@@ -85,6 +85,7 @@ func TestMap(t *testing.T) {
 	}
 
 	for _, test := range tests {
+		test := test
 		t.Run(test.name, func(t *testing.T) {
 			m, err := mapper.Map(context.TODO(), test.input)
 			if err != nil {

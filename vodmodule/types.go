@@ -1,6 +1,6 @@
 package vodmodule
 
-// Mapping represents the reponse expected by the vod-module.
+// Mapping represents the response expected by the vod-module.
 //
 // See https://github.com/kaltura/nginx-vod-module#mapping-response-format.
 type Mapping struct {

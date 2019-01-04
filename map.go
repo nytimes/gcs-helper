@@ -10,19 +10,6 @@ import (
 	"github.com/NYTimes/gcs-helper/v3/vodmodule"
 )
 
-type mapping struct {
-	Sequences []sequence `json:"sequences"`
-}
-
-type sequence struct {
-	Clips []clip `json:"clips"`
-}
-
-type clip struct {
-	Type string `json:"type"`
-	Path string `json:"path"`
-}
-
 func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 	mapper := vodmodule.NewMapper(client.Bucket(c.BucketName))
 	filter := regexp.MustCompile(c.Map.RegexFilter)
