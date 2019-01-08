@@ -14,14 +14,13 @@ const maxTry = 5
 // Mapper provides the ability of mapping objects on a GCS bucket in the format
 // expected by nginx-vod-module.
 type Mapper struct {
-	bucket        *storage.BucketHandle
-	defaultFilter *regexp.Regexp
+	bucket *storage.BucketHandle
 }
 
 // NewMapper returns a mapper that will map content for prefix in the given
 // BucketHandle.
 func NewMapper(bucket *storage.BucketHandle) *Mapper {
-	return &Mapper{bucket: bucket, defaultFilter: regexp.MustCompile("")}
+	return &Mapper{bucket: bucket}
 }
 
 // MapOptions represents the set of options that can be passed to Map.
@@ -44,9 +43,6 @@ func (m *Mapper) Map(ctx context.Context, opts MapOptions) (Mapping, error) {
 }
 
 func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp.Regexp) ([]Sequence, error) {
-	if filter == nil {
-		filter = m.defaultFilter
-	}
 	var err error
 	for i := 0; i < maxTry; i++ {
 		iter := m.bucket.Objects(ctx, &storage.Query{
@@ -58,7 +54,7 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 		obj, err = iter.Next()
 		for ; err == nil; obj, err = iter.Next() {
 			filename := path.Base(obj.Name)
-			if filter.MatchString(filename) {
+			if filter == nil || filter.MatchString(filename) {
 				seqs = append(seqs, Sequence{
 					Clips: []Clip{{Type: "source", Path: "/" + obj.Bucket + "/" + obj.Name}},
 				})
