@@ -21,11 +21,8 @@ type Config struct {
 
 // MapConfig contains configuration for the map mode.
 type MapConfig struct {
-	Endpoint            string            `envconfig:"GCS_HELPER_MAP_PREFIX"`
-	ExtraResourcesToken string            `envconfig:"GCS_HELPER_MAP_EXTRA_RESOURCES_TOKEN"`
-	RegexFilters        map[string]string `envconfig:"GCS_HELPER_MAP_REGEX_FILTERS"`
-	ExtraPrefixes       []string          `envconfig:"GCS_HELPER_MAP_EXTRA_PREFIXES"`
-	ExtensionSplit      bool              `envconfig:"GCS_HELPER_MAP_EXTENSION_SPLIT"`
+	Endpoint    string `envconfig:"GCS_HELPER_MAP_PREFIX"`
+	RegexFilter string `envconfig:"GCS_HELPER_MAP_REGEX_FILTER"`
 }
 
 // ProxyConfig contains configuration for the proxy mode.

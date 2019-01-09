@@ -110,9 +110,7 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 	addr, cleanup := startServer(Config{
 		BucketName: "my-bucket",
 		Map: MapConfig{
-			Endpoint:            "/map/",
-			ExtraPrefixes:       []string{"subs/", "mp4s/"},
-			ExtraResourcesToken: "extra",
+			Endpoint: "/map/",
 		},
 		Proxy: ProxyConfig{
 			Endpoint:     "/proxy/",
