@@ -9,7 +9,7 @@ import (
 	"google.golang.org/api/iterator"
 )
 
-const maxTry = 5
+const maxTries = 5
 
 // Mapper provides the ability of mapping objects on a GCS bucket in the format
 // expected by nginx-vod-module.
@@ -44,7 +44,7 @@ func (m *Mapper) Map(ctx context.Context, opts MapOptions) (Mapping, error) {
 
 func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp.Regexp) ([]Sequence, error) {
 	var err error
-	for i := 0; i < maxTry; i++ {
+	for i := 0; i < maxTries; i++ {
 		iter := m.bucket.Objects(ctx, &storage.Query{
 			Prefix:    prefix,
 			Delimiter: "/",
