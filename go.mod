@@ -10,15 +10,13 @@ require (
 	github.com/gorilla/context v1.1.1 // indirect
 	github.com/kardianos/osext v0.0.0-20170510131534-ae77be60afb1 // indirect
 	github.com/kelseyhightower/envconfig v1.3.0
-	github.com/sirupsen/logrus v1.2.0
-	go.opencensus.io v0.18.0 // indirect
-	golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9 // indirect
-	golang.org/x/net v0.0.0-20181220203305-927f97764cc3 // indirect
-	golang.org/x/oauth2 v0.0.0-20181203162652-d668ce993890 // indirect
+	github.com/sirupsen/logrus v1.3.0
+	github.com/stretchr/testify v1.3.0 // indirect
+	golang.org/x/crypto v0.0.0-20190103213133-ff983b9c42bc // indirect
+	golang.org/x/net v0.0.0-20190108225652-1e06a53dbb7e // indirect
 	golang.org/x/sync v0.0.0-20181221193216-37e7f081c4d4 // indirect
-	golang.org/x/sys v0.0.0-20181228144115-9a3f9b0469bb // indirect
-	google.golang.org/api v0.0.0-20181229000844-f26a60c56f14
+	golang.org/x/sys v0.0.0-20190109145017-48ac38b7c8cb // indirect
+	google.golang.org/api v0.1.0
 	google.golang.org/appengine v1.4.0 // indirect
-	google.golang.org/genproto v0.0.0-20181221175505-bd9b4fb69e2f // indirect
-	google.golang.org/grpc v1.17.0 // indirect
+	google.golang.org/genproto v0.0.0-20190108161440-ae2f86662275 // indirect
 )
