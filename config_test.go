@@ -15,7 +15,7 @@ func TestLoadConfig(t *testing.T) {
 		"GCS_HELPER_BUCKET_NAME":          "some-bucket",
 		"GCS_HELPER_LOG_LEVEL":            "info",
 		"GCS_HELPER_MAP_PREFIX":           "/map/",
-		"GCS_HELPER_MAP_REGEX_FILTER":     `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+		"GCS_HELPER_MAP_REGEX_FILTER":     `(240|360|424|480|720|1080)p\.(mp4|vtt|srt)$`,
 		"GCS_HELPER_PROXY_PREFIX":         "/proxy/",
 		"GCS_HELPER_PROXY_LOG_HEADERS":    "Accept,Range",
 		"GCS_HELPER_PROXY_TIMEOUT":        "20s",
@@ -40,7 +40,7 @@ func TestLoadConfig(t *testing.T) {
 		},
 		Map: MapConfig{
 			Endpoint:    "/map/",
-			RegexFilter: `(240|360|424|480|720|1080)p(\.mp4|[a-z0-9_-]{37}\.(vtt|srt))$`,
+			RegexFilter: `(240|360|424|480|720|1080)p\.(mp4|vtt|srt)$`,
 		},
 		Client: ClientConfig{
 			IdleConnTimeout: 3 * time.Minute,
