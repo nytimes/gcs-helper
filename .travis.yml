@@ -13,6 +13,7 @@ go:
   - tip
 env:
   - GO111MODULE=on
+  - GOPROXY=https://athens.azurefd.net
 matrix:
   allow_failures:
     - go: tip
