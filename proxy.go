@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -97,7 +96,7 @@ func writeHeader(ctx context.Context, object *storage.ObjectHandle, w http.Respo
 
 func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.ResponseWriter, r *http.Request) error {
 	offset, end, length := getRange(r)
-	reader, err := getReader(ctx, object, offset, length, maxTry)
+	reader, err := getReader(ctx, object, offset, length, maxTry, nil)
 	if err != nil {
 		return handleObjectError(err, w)
 	}
@@ -117,16 +116,16 @@ func handleGet(ctx context.Context, object *storage.ObjectHandle, w http.Respons
 	return err
 }
 
-func getReader(ctx context.Context, object *storage.ObjectHandle, offset, length int64, try int) (*storage.Reader, error) {
+func getReader(ctx context.Context, object *storage.ObjectHandle, offset, length int64, try int, err error) (*storage.Reader, error) {
 	if try == 0 {
-		return nil, errors.New("max try exceeded")
+		return nil, fmt.Errorf("max try exceeded, last error: %v", err)
 	}
 	reader, err := object.NewRangeReader(ctx, offset, length)
 	switch err {
 	case nil, context.DeadlineExceeded, context.Canceled, storage.ErrBucketNotExist, storage.ErrObjectNotExist:
 		return reader, err
 	default:
-		return getReader(ctx, object, offset, length, try-1)
+		return getReader(ctx, object, offset, length, try-1, err)
 	}
 }
 
