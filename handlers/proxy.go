@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"time"
 
-	"cloud.google.com/go/storage"
 	"github.com/sirupsen/logrus"
 )
 
@@ -101,11 +100,7 @@ func (h *proxyHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 // Proxy returns the proxy handler.
-func Proxy(c Config, client *storage.Client) http.Handler {
+func Proxy(c Config, hc *http.Client) http.Handler {
 	logger := c.Logger()
-	hc, err := c.Client.HTTPClient()
-	if err != nil {
-		logger.Fatalf("failed to initialize http client: %v", err.Error())
-	}
 	return &proxyHandler{logger: logger, hc: hc, config: c}
 }

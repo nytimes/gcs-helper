@@ -22,12 +22,7 @@ func testProxyServer(cfg Config) (string, func()) {
 	logger := logrus.New()
 	logger.Out = ioutil.Discard
 	server := fakestorage.NewServer(testhelper.FakeObjects)
-	handler := proxyHandler{
-		config: cfg,
-		logger: logger,
-		hc:     server.HTTPClient(),
-	}
-	httpServer := httptest.NewServer(&handler)
+	httpServer := httptest.NewServer(Proxy(cfg, server.HTTPClient()))
 	return httpServer.URL, func() {
 		httpServer.Close()
 		server.Stop()
