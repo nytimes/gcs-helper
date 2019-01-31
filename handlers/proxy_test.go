@@ -73,7 +73,7 @@ func TestProxyHandler(t *testing.T) {
 			nil,
 			http.StatusNotFound,
 			nil,
-			"storage: object doesn't exist\n",
+			"not found\n",
 		},
 		{
 			"file attrs - object not found",
@@ -131,7 +131,6 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 			Addr:           addr + "/your-bucket/musics/music/music3.txt",
 			ExpectedStatus: http.StatusOK,
 			ExpectedHeader: http.Header{
-				"Accept-Ranges":  []string{"bytes"},
 				"Content-Length": []string{"9"},
 			},
 			ExpectedBody: "wait what",
