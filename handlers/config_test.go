@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"os"
+	"path/filepath"
 	"reflect"
 	"testing"
 	"time"
@@ -116,6 +117,28 @@ func TestLoadConfigValidation(t *testing.T) {
 	expectedConfig := Config{Listen: ":8080"}
 	if !reflect.DeepEqual(config, expectedConfig) {
 		t.Errorf("wrong config returned\nwant %#v\ngot  %#v", expectedConfig, config)
+	}
+}
+
+func TestHTTPClient(t *testing.T) {
+	os.Clearenv()
+	const timeout = 2 * time.Second
+	credsPath, err := filepath.Abs("testdata/google-creds.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", credsPath)
+	cfg := ClientConfig{
+		Timeout:         timeout,
+		IdleConnTimeout: 1 * time.Second,
+		MaxIdleConns:    10,
+	}
+	hc, err := cfg.HTTPClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if hc.Timeout != timeout {
+		t.Errorf("wrong timeout set\nwant %s\ngot  %s", timeout, hc.Timeout)
 	}
 }
 

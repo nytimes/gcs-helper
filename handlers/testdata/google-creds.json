@@ -1,0 +1,6 @@
+{
+  "client_id": "invalid-credentials-dont-trye.apps.googleusercontent.com",
+  "client_secret": "d-abc123jC1",
+  "refresh_token": "whateverss",
+  "type": "authorized_user"
+}
