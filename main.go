@@ -10,6 +10,7 @@ import (
 	"os"
 
 	"cloud.google.com/go/storage"
+	"github.com/NYTimes/gcs-helper/v3/handlers"
 	"github.com/google/gops/agent"
 	"google.golang.org/api/option"
 	ghttp "google.golang.org/api/transport/http"
@@ -24,11 +25,11 @@ func main() {
 		log.Fatalf("could not start gops agent: %v", err)
 	}
 	defer agent.Close()
-	config, err := loadConfig()
+	config, err := handlers.LoadConfig()
 	if err != nil {
 		log.Fatal(err)
 	}
-	logger := config.logger()
+	logger := config.Logger()
 	hc, err := httpClient(config.Client)
 	if err != nil {
 		logger.WithError(err).Fatal("failed to initialize http client")
@@ -50,7 +51,7 @@ func main() {
 	}
 }
 
-func httpClient(c ClientConfig) (*http.Client, error) {
+func httpClient(c handlers.ClientConfig) (*http.Client, error) {
 	baseTransport := http.Transport{
 		IdleConnTimeout: c.IdleConnTimeout,
 		MaxIdleConns:    c.MaxIdleConns,

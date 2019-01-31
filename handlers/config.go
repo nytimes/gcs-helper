@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"os"
@@ -42,7 +42,7 @@ type ClientConfig struct {
 	MaxIdleConns    int           `envconfig:"GCS_CLIENT_MAX_IDLE_CONNS" default:"10"`
 }
 
-func (c Config) logger() *logrus.Logger {
+func (c Config) Logger() *logrus.Logger {
 	level, err := logrus.ParseLevel(c.LogLevel)
 	if err != nil {
 		level = logrus.DebugLevel
@@ -54,7 +54,8 @@ func (c Config) logger() *logrus.Logger {
 	return logger
 }
 
-func loadConfig() (Config, error) {
+// LoadConfig loads the configuration from environment variables.
+func LoadConfig() (Config, error) {
 	var c Config
 	err := envconfig.Process("gcs_helper", &c)
 	return c, err

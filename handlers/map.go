@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -10,11 +10,12 @@ import (
 	"github.com/NYTimes/gcs-helper/v3/vodmodule"
 )
 
-func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
+// Map returns the map handler.
+func Map(c Config, client *storage.Client) http.Handler {
 	mapper := vodmodule.NewMapper(client.Bucket(c.BucketName))
 	filter := regexp.MustCompile(c.Map.RegexFilter)
-	logger := c.logger()
-	return func(w http.ResponseWriter, r *http.Request) {
+	logger := c.Logger()
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
 		if r.Method != http.MethodGet {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
@@ -36,5 +37,5 @@ func getMapHandler(c Config, client *storage.Client) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(m)
-	}
+	})
 }

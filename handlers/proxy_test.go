@@ -1,13 +1,15 @@
-package main
+package handlers
 
 import (
 	"net/http"
 	"testing"
 	"time"
+
+	"github.com/NYTimes/gcs-helper/v3/internal/testhelper"
 )
 
-func TestServerProxyOnly(t *testing.T) {
-	addr, cleanup := startServer(Config{
+func TestProxyHandler(t *testing.T) {
+	addr, cleanup := testProxyServer(Config{
 		BucketName: "my-bucket",
 		Proxy: ProxyConfig{
 			LogHeaders: []string{"Accept", "User-Agent", "Range"},
@@ -15,7 +17,7 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 	})
 	defer cleanup()
-	var tests = []serverTest{
+	var tests = []testhelper.ServerTest{
 		{
 			"healthcheck through the proxy",
 			http.MethodGet,
@@ -102,16 +104,13 @@ func TestServerProxyOnly(t *testing.T) {
 		},
 	}
 	for _, test := range tests {
-		t.Run(test.testCase, test.run)
+		t.Run(test.TestCase, test.Run)
 	}
 }
 
 func TestServerProxyHandlerBucketInThePath(t *testing.T) {
-	addr, cleanup := startServer(Config{
+	addr, cleanup := testProxyServer(Config{
 		BucketName: "my-bucket",
-		Map: MapConfig{
-			Endpoint: "/map/",
-		},
 		Proxy: ProxyConfig{
 			Endpoint:     "/proxy/",
 			BucketOnPath: true,
@@ -119,33 +118,33 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 		},
 	})
 	defer cleanup()
-	var tests = []serverTest{
+	var tests = []testhelper.ServerTest{
 		{
-			testCase:       "healthcheck",
-			method:         http.MethodGet,
-			addr:           addr,
-			expectedStatus: http.StatusOK,
+			TestCase:       "healthcheck",
+			Method:         http.MethodGet,
+			Addr:           addr,
+			ExpectedStatus: http.StatusOK,
 		},
 		{
-			testCase:       "proxy: download file",
-			method:         http.MethodGet,
-			addr:           addr + "/proxy/your-bucket/musics/music/music3.txt",
-			expectedStatus: http.StatusOK,
-			expectedHeader: http.Header{
+			TestCase:       "proxy: download file",
+			Method:         http.MethodGet,
+			Addr:           addr + "/your-bucket/musics/music/music3.txt",
+			ExpectedStatus: http.StatusOK,
+			ExpectedHeader: http.Header{
 				"Accept-Ranges":  []string{"bytes"},
 				"Content-Length": []string{"9"},
 			},
-			expectedBody: "wait what",
+			ExpectedBody: "wait what",
 		},
 	}
 
 	for _, test := range tests {
-		t.Run(test.testCase, test.run)
+		t.Run(test.TestCase, test.Run)
 	}
 }
 
 func TestServerProxyHandlerBucketNotFound(t *testing.T) {
-	addr, cleanup := startServer(Config{BucketName: "some-bucket", Proxy: ProxyConfig{Timeout: time.Second}})
+	addr, cleanup := testProxyServer(Config{BucketName: "some-bucket", Proxy: ProxyConfig{Timeout: time.Second}})
 	defer cleanup()
 	req, _ := http.NewRequest(http.MethodHead, addr+"/whatever", nil)
 	resp, err := http.DefaultClient.Do(req)

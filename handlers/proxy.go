@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"context"
@@ -25,9 +25,10 @@ func (w *codeWrapper) WriteHeader(code int) {
 	w.ResponseWriter.WriteHeader(code)
 }
 
-func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
-	logger := c.logger()
-	return func(w http.ResponseWriter, r *http.Request) {
+// Proxy returns the proxy handler.
+func Proxy(c Config, client *storage.Client) http.Handler {
+	logger := c.Logger()
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		start := time.Now()
 		defer r.Body.Close()
 		if r.Method != http.MethodGet && r.Method != http.MethodHead {
@@ -71,7 +72,7 @@ func getProxyHandler(c Config, client *storage.Client) http.HandlerFunc {
 				entry.Debug("finished handling request")
 			}
 		}
-	}
+	})
 }
 
 func writeHeader(ctx context.Context, object *storage.ObjectHandle, w http.ResponseWriter, extra http.Header, status int) error {

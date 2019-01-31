@@ -1,79 +1,76 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 	"time"
 
+	"github.com/NYTimes/gcs-helper/v3/handlers"
 	"github.com/NYTimes/gcs-helper/v3/internal/testhelper"
 	"github.com/fsouza/fake-gcs-server/fakestorage"
-	"github.com/google/go-cmp/cmp"
 )
 
 func TestServerMultiPrefixes(t *testing.T) {
-	addr, cleanup := startServer(Config{
+	addr, cleanup := startServer(handlers.Config{
 		BucketName: "my-bucket",
-		Map: MapConfig{
+		Map: handlers.MapConfig{
 			Endpoint:    "/map/",
 			RegexFilter: `((240|360|424|480|720|1080)p\.mp4)|\.(vtt)$`,
 		},
-		Proxy: ProxyConfig{
+		Proxy: handlers.ProxyConfig{
 			Endpoint: "/proxy/",
 			Timeout:  time.Second,
 		},
 	})
 	defer cleanup()
-	var tests = []serverTest{
+	var tests = []testhelper.ServerTest{
 		{
-			testCase:       "healthcheck",
-			method:         http.MethodGet,
-			addr:           addr,
-			expectedStatus: http.StatusOK,
+			TestCase:       "healthcheck",
+			Method:         http.MethodGet,
+			Addr:           addr,
+			ExpectedStatus: http.StatusOK,
 		},
 		{
-			testCase:       "not found",
-			method:         http.MethodGet,
-			addr:           addr + "/what",
-			expectedStatus: http.StatusNotFound,
-			expectedBody:   "not found\n",
+			TestCase:       "not found",
+			Method:         http.MethodGet,
+			Addr:           addr + "/what",
+			ExpectedStatus: http.StatusNotFound,
+			ExpectedBody:   "not found\n",
 		},
 		{
-			testCase:       "proxy: download file",
-			method:         http.MethodGet,
-			addr:           addr + "/proxy/musics/music/music1.txt",
-			expectedStatus: http.StatusOK,
-			expectedHeader: http.Header{
+			TestCase:       "proxy: download file",
+			Method:         http.MethodGet,
+			Addr:           addr + "/proxy/musics/music/music1.txt",
+			ExpectedStatus: http.StatusOK,
+			ExpectedHeader: http.Header{
 				"Accept-Ranges":  []string{"bytes"},
 				"Content-Length": []string{"15"},
 			},
-			expectedBody: "some nice music",
+			ExpectedBody: "some nice music",
 		},
 		{
-			testCase: "proxy: download file - range",
-			method:   http.MethodGet,
-			addr:     addr + "/proxy/musics/music/music2.txt",
-			reqHeader: http.Header{
+			TestCase: "proxy: download file - range",
+			Method:   http.MethodGet,
+			Addr:     addr + "/proxy/musics/music/music2.txt",
+			ReqHeader: http.Header{
 				"Range": []string{"bytes=2-10"},
 			},
-			expectedStatus: http.StatusPartialContent,
-			expectedHeader: http.Header{
+			ExpectedStatus: http.StatusPartialContent,
+			ExpectedHeader: http.Header{
 				"Accept-Ranges":  []string{"bytes"},
 				"Content-Length": []string{"8"},
 				"Content-Range":  []string{"bytes 2-10/16"},
 			},
-			expectedBody: "me nicer",
+			ExpectedBody: "me nicer",
 		},
 		{
-			testCase:       "map: list of files",
-			method:         http.MethodGet,
-			addr:           addr + "/map/videos/video/",
-			expectedStatus: http.StatusOK,
-			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
-			expectedBody: map[string]interface{}{
+			TestCase:       "map: list of files",
+			Method:         http.MethodGet,
+			Addr:           addr + "/map/videos/video/",
+			ExpectedStatus: http.StatusOK,
+			ExpectedHeader: http.Header{"Content-Type": []string{"application/json"}},
+			ExpectedBody: map[string]interface{}{
 				"sequences": []interface{}{
 					map[string]interface{}{
 						"clips": []interface{}{
@@ -111,86 +108,35 @@ func TestServerMultiPrefixes(t *testing.T) {
 			},
 		},
 		{
-			testCase:       "map: empty list",
-			method:         http.MethodGet,
-			addr:           addr + "/map/musics/musyc",
-			expectedStatus: http.StatusOK,
-			expectedHeader: http.Header{"Content-Type": []string{"application/json"}},
-			expectedBody:   map[string]interface{}{"sequences": []interface{}{}},
+			TestCase:       "map: empty list",
+			Method:         http.MethodGet,
+			Addr:           addr + "/map/musics/musyc",
+			ExpectedStatus: http.StatusOK,
+			ExpectedHeader: http.Header{"Content-Type": []string{"application/json"}},
+			ExpectedBody:   map[string]interface{}{"sequences": []interface{}{}},
 		},
 		{
-			testCase:       "map: method not allowed",
-			method:         http.MethodPost,
-			addr:           addr + "/map/musics",
-			expectedStatus: http.StatusMethodNotAllowed,
-			expectedBody:   "method not allowed\n",
+			TestCase:       "map: method not allowed",
+			Method:         http.MethodPost,
+			Addr:           addr + "/map/musics",
+			ExpectedStatus: http.StatusMethodNotAllowed,
+			ExpectedBody:   "method not allowed\n",
 		},
 		{
-			testCase:       "map: invalid url",
-			method:         http.MethodGet,
-			addr:           addr + "/map/",
-			expectedStatus: http.StatusBadRequest,
-			expectedBody:   "prefix cannot be empty\n",
+			TestCase:       "map: invalid url",
+			Method:         http.MethodGet,
+			Addr:           addr + "/map/",
+			ExpectedStatus: http.StatusBadRequest,
+			ExpectedBody:   "prefix cannot be empty\n",
 		},
 	}
 
 	for _, test := range tests {
-		t.Run(test.testCase, test.run)
+		t.Run(test.TestCase, test.Run)
 	}
 }
 
-type serverTest struct {
-	testCase       string
-	method         string
-	addr           string
-	reqHeader      http.Header
-	expectedStatus int
-	expectedHeader http.Header
-	expectedBody   interface{}
-}
-
-func (st *serverTest) run(t *testing.T) {
-	req, _ := http.NewRequest(st.method, st.addr, nil)
-	for name := range st.reqHeader {
-		req.Header.Set(name, st.reqHeader.Get(name))
-	}
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer resp.Body.Close()
-	data, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp.StatusCode != st.expectedStatus {
-		t.Errorf("wrong status code\nwant %d\ngot  %d", st.expectedStatus, resp.StatusCode)
-	}
-	if expectedBody, ok := st.expectedBody.(string); ok {
-		if string(data) != expectedBody {
-			t.Errorf("wrong body\nwant %q\ngot  %q", expectedBody, string(data))
-		}
-	} else if st.expectedBody != nil {
-		var body interface{}
-		err = json.Unmarshal(data, &body)
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !reflect.DeepEqual(body, st.expectedBody) {
-			t.Log(cmp.Diff(body, st.expectedBody))
-			t.Errorf("wrong body returned\nwant %#v\ngot  %#v", st.expectedBody, body)
-		}
-	}
-	for name := range st.expectedHeader {
-		expected := st.expectedHeader.Get(name)
-		got := resp.Header.Get(name)
-		if expected != got {
-			t.Errorf("header %q: wrong value\nwant %q\ngot  %q", name, expected, got)
-		}
-	}
-}
-
-func startServer(cfg Config) (string, func()) {
+func startServer(cfg handlers.Config) (string, func()) {
 	server := fakestorage.NewServer(testhelper.FakeObjects)
 	handler := getHandler(cfg, server.Client())
 	httpServer := httptest.NewServer(handler)

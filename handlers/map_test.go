@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"encoding/json"
@@ -12,19 +12,13 @@ import (
 )
 
 func TestServerMapListOfFiles(t *testing.T) {
-	addr, cleanup := startServer(Config{
+	addr, cleanup := testMapServer(Config{
 		BucketName: "my-bucket",
-		Map: MapConfig{
-			Endpoint:    "/map/",
-			RegexFilter: `\.mp4$`,
-		},
-		Proxy: ProxyConfig{
-			Endpoint: "/proxy/",
-			Timeout:  time.Second,
-		},
+		Map:        MapConfig{RegexFilter: `\.mp4$`},
+		Proxy:      ProxyConfig{Timeout: time.Second},
 	})
 	defer cleanup()
-	req, _ := http.NewRequest(http.MethodGet, addr+"/map/videos/video/", nil)
+	req, _ := http.NewRequest(http.MethodGet, addr+"/videos/video/", nil)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
@@ -71,7 +65,7 @@ func TestServerMapListOfFiles(t *testing.T) {
 }
 
 func TestServerMapBucketNotFound(t *testing.T) {
-	addr, cleanup := startServer(Config{
+	addr, cleanup := testMapServer(Config{
 		BucketName: "some-bucket",
 		Map: MapConfig{
 			Endpoint: "/map",

@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"os"
@@ -24,7 +24,7 @@ func TestLoadConfig(t *testing.T) {
 		"GCS_CLIENT_IDLE_CONN_TIMEOUT":    "3m",
 		"GCS_CLIENT_MAX_IDLE_CONNS":       "16",
 	})
-	config, err := loadConfig()
+	config, err := LoadConfig()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -55,7 +55,7 @@ func TestLoadConfig(t *testing.T) {
 
 func TestLoadConfigDefaultValues(t *testing.T) {
 	setEnvs(map[string]string{"GCS_HELPER_BUCKET_NAME": "some-bucket"})
-	config, err := loadConfig()
+	config, err := LoadConfig()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -79,11 +79,11 @@ func TestLoadConfigDefaultValues(t *testing.T) {
 
 func TestConfigLogger(t *testing.T) {
 	setEnvs(map[string]string{"GCS_HELPER_BUCKET_NAME": "some-bucket", "GCS_HELPER_LOG_LEVEL": "info"})
-	config, err := loadConfig()
+	config, err := LoadConfig()
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger := config.logger()
+	logger := config.Logger()
 	if logger.Out != os.Stdout {
 		t.Errorf("wrong log output, want os.Stdout, got %#v", logger.Out)
 	}
@@ -94,11 +94,11 @@ func TestConfigLogger(t *testing.T) {
 
 func TestConfigLoggerInvalidLevel(t *testing.T) {
 	setEnvs(map[string]string{"GCS_HELPER_BUCKET_NAME": "some-bucket", "GCS_HELPER_LOG_LEVEL": "dunno"})
-	config, err := loadConfig()
+	config, err := LoadConfig()
 	if err != nil {
 		t.Fatal(err)
 	}
-	logger := config.logger()
+	logger := config.Logger()
 	if logger.Out != os.Stdout {
 		t.Errorf("wrong log output, want os.Stdout, got %#v", logger.Out)
 	}
@@ -109,7 +109,7 @@ func TestConfigLoggerInvalidLevel(t *testing.T) {
 
 func TestLoadConfigValidation(t *testing.T) {
 	setEnvs(nil)
-	config, err := loadConfig()
+	config, err := LoadConfig()
 	if err == nil {
 		t.Error("unexpected <nil> error")
 	}
