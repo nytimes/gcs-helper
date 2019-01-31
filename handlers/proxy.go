@@ -52,7 +52,7 @@ func Proxy(c Config, client *storage.Client) http.Handler {
 			err = handleGet(ctx, obj, &resp, r)
 		}
 
-		if err != nil || logger.Level <= logrus.DebugLevel {
+		if err != nil || logger.Level >= logrus.DebugLevel {
 			fields := logrus.Fields{
 				"method":        r.Method,
 				"ellapsed":      time.Since(start).String(),
