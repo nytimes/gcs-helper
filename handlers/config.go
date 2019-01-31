@@ -1,11 +1,16 @@
 package handlers
 
 import (
+	"context"
+	"net/http"
 	"os"
 	"time"
 
+	"cloud.google.com/go/storage"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/sirupsen/logrus"
+	"google.golang.org/api/option"
+	ghttp "google.golang.org/api/transport/http"
 )
 
 // Config represents the gcs-helper configuration that is loaded from the
@@ -17,6 +22,18 @@ type Config struct {
 	Client     ClientConfig
 	Map        MapConfig
 	Proxy      ProxyConfig
+}
+
+func (c Config) Logger() *logrus.Logger {
+	level, err := logrus.ParseLevel(c.LogLevel)
+	if err != nil {
+		level = logrus.DebugLevel
+	}
+
+	logger := logrus.New()
+	logger.Out = os.Stdout
+	logger.Level = level
+	return logger
 }
 
 // MapConfig contains configuration for the map mode.
@@ -42,16 +59,18 @@ type ClientConfig struct {
 	MaxIdleConns    int           `envconfig:"GCS_CLIENT_MAX_IDLE_CONNS" default:"10"`
 }
 
-func (c Config) Logger() *logrus.Logger {
-	level, err := logrus.ParseLevel(c.LogLevel)
-	if err != nil {
-		level = logrus.DebugLevel
+// HTTPClient returns an HTTP client with the proper authentication config
+// (using Google's default application credentials) and timeouts.
+func (c ClientConfig) HTTPClient() (*http.Client, error) {
+	baseTransport := http.Transport{
+		IdleConnTimeout: c.IdleConnTimeout,
+		MaxIdleConns:    c.MaxIdleConns,
 	}
-
-	logger := logrus.New()
-	logger.Out = os.Stdout
-	logger.Level = level
-	return logger
+	transport, err := ghttp.NewTransport(context.Background(), &baseTransport, option.WithScopes(storage.ScopeReadOnly))
+	return &http.Client{
+		Timeout:   c.Timeout,
+		Transport: transport,
+	}, err
 }
 
 // LoadConfig loads the configuration from environment variables.

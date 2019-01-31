@@ -13,7 +13,6 @@ import (
 	"github.com/NYTimes/gcs-helper/v3/handlers"
 	"github.com/google/gops/agent"
 	"google.golang.org/api/option"
-	ghttp "google.golang.org/api/transport/http"
 )
 
 const version = "3.1.1"
@@ -30,7 +29,7 @@ func main() {
 		log.Fatal(err)
 	}
 	logger := config.Logger()
-	hc, err := httpClient(config.Client)
+	hc, err := config.Client.HTTPClient()
 	if err != nil {
 		logger.WithError(err).Fatal("failed to initialize http client")
 	}
@@ -49,18 +48,6 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("failed to start server")
 	}
-}
-
-func httpClient(c handlers.ClientConfig) (*http.Client, error) {
-	baseTransport := http.Transport{
-		IdleConnTimeout: c.IdleConnTimeout,
-		MaxIdleConns:    c.MaxIdleConns,
-	}
-	transport, err := ghttp.NewTransport(context.Background(), &baseTransport, option.WithScopes(storage.ScopeReadOnly))
-	return &http.Client{
-		Timeout:   c.Timeout,
-		Transport: transport,
-	}, err
 }
 
 func handleFlags() {
