@@ -138,7 +138,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 
 func startServer(cfg handlers.Config) (string, func()) {
 	server := fakestorage.NewServer(testhelper.FakeObjects)
-	handler := getHandler(cfg, server.Client())
+	handler := getHandler(cfg, server.Client(), server.HTTPClient())
 	httpServer := httptest.NewServer(handler)
 	return httpServer.URL, func() {
 		httpServer.Close()

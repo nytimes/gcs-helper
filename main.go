@@ -37,7 +37,7 @@ func main() {
 	if err != nil {
 		logger.WithError(err).Fatal("failed to create storage client instance")
 	}
-	handler := getHandler(config, client)
+	handler := getHandler(config, client, hc)
 	listener, err := net.Listen("tcp", config.Listen)
 	if err != nil {
 		logger.WithField("listenAddr", config.Listen).WithError(err).Fatal("failed to start listener")
