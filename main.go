@@ -56,7 +56,7 @@ func httpClient(c handlers.ClientConfig) (*http.Client, error) {
 		IdleConnTimeout: c.IdleConnTimeout,
 		MaxIdleConns:    c.MaxIdleConns,
 	}
-	transport, err := ghttp.NewTransport(context.Background(), &baseTransport, option.WithScopes(storage.ScopeFullControl))
+	transport, err := ghttp.NewTransport(context.Background(), &baseTransport, option.WithScopes(storage.ScopeReadOnly))
 	return &http.Client{
 		Timeout:   c.Timeout,
 		Transport: transport,
