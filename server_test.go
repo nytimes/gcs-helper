@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/NYTimes/gcs-helper/v3/vodmodule/testhelper"
+	"github.com/NYTimes/gcs-helper/v3/internal/testhelper"
 	"github.com/fsouza/fake-gcs-server/fakestorage"
 	"github.com/google/go-cmp/cmp"
 )
