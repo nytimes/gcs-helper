@@ -12,6 +12,7 @@ import (
 )
 
 func TestServerMapListOfFiles(t *testing.T) {
+	t.Parallel()
 	addr, cleanup := testMapServer(Config{
 		BucketName: "my-bucket",
 		Map:        MapConfig{RegexFilter: `\.mp4$`},
@@ -64,7 +65,44 @@ func TestServerMapListOfFiles(t *testing.T) {
 	}
 }
 
+func TestServerMapInvalidMethod(t *testing.T) {
+	t.Parallel()
+	addr, cleanup := testMapServer(Config{
+		BucketName: "my-bucket",
+		Map:        MapConfig{RegexFilter: `\.mp4$`},
+		Proxy:      ProxyConfig{Timeout: time.Second},
+	})
+	defer cleanup()
+	req, _ := http.NewRequest(http.MethodPost, addr+"/videos/video/", nil)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusMethodNotAllowed {
+		t.Errorf("wrong status code\nwant %d\ngot  %d", http.StatusMethodNotAllowed, resp.StatusCode)
+	}
+}
+
+func TestServerMapInvalidPrefix(t *testing.T) {
+	t.Parallel()
+	addr, cleanup := testMapServer(Config{
+		BucketName: "my-bucket",
+		Map:        MapConfig{RegexFilter: `\.mp4$`},
+		Proxy:      ProxyConfig{Timeout: time.Second},
+	})
+	defer cleanup()
+	req, _ := http.NewRequest(http.MethodGet, addr, nil)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("wrong status code\nwant %d\ngot  %d", http.StatusBadRequest, resp.StatusCode)
+	}
+}
+
 func TestServerMapBucketNotFound(t *testing.T) {
+	t.Parallel()
 	addr, cleanup := testMapServer(Config{
 		BucketName: "some-bucket",
 		Map: MapConfig{
