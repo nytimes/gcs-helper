@@ -2,17 +2,14 @@ language: go
 sudo: false
 install:
   - go mod download
-  - go get -v github.com/golangci/golangci-lint/cmd/golangci-lint
+  - go get -v github.com/golangci/golangci-lint/cmd/golangci-lint@master
 script:
   - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
   - go test -coverprofile=coverage.txt -covermode=atomic -race ./...
 after_success:
   - bash <(curl -s https://codecov.io/bash)
 go:
-  - 1.11.x
+  - 1.x
   - tip
 env:
   - GO111MODULE=on
-matrix:
-  allow_failures:
-    - go: tip
