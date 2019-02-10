@@ -3,9 +3,10 @@ sudo: false
 cache:
   directories:
     - $GOPATH/pkg
+    - $GOPATH/bin
 install:
   - go mod download
-  - go get -v github.com/golangci/golangci-lint/cmd/golangci-lint@master
+  - go get github.com/golangci/golangci-lint/cmd/golangci-lint@master
 script:
   - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
   - go test -coverprofile=coverage.txt -covermode=atomic -race ./...
