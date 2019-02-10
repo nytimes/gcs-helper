@@ -1,5 +1,8 @@
 language: go
 sudo: false
+cache:
+  directories:
+    - $GOPATH/pkg
 install:
   - go mod download
   - go get -v github.com/golangci/golangci-lint/cmd/golangci-lint@master
