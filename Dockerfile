@@ -7,7 +7,7 @@ ADD     . /code
 WORKDIR /code
 RUN     go install
 
-FROM alpine:3.8
+FROM alpine:3.9
 COPY --from=build /go/bin/gcs-helper /usr/bin/gcs-helper
 COPY --from=ca-certificates / /
 ENTRYPOINT ["/usr/bin/gcs-helper"]
