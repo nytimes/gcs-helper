@@ -7,11 +7,6 @@ if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
 	exit 0
 fi
 
-if [ "${TRAVIS_EVENT_TYPE}" = "cron" ]; then
-	echo >&2 "Skipping image build on cron..."
-	exit 0
-fi
-
 if [ "${TRAVIS_GO_VERSION}" != "1.x" ]; then
 	echo >&2 "Skipping docker build on Go ${TRAVIS_GO_VERSION}"
 	exit 0
