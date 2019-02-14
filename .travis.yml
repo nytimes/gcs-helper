@@ -8,7 +8,7 @@ services:
   - docker
 install:
   - go mod download
-  - go get github.com/golangci/golangci-lint/cmd/golangci-lint@master
+  - go get github.com/golangci/golangci-lint/cmd/golangci-lint@latest
 script:
   - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
   - go test -coverprofile=coverage.txt -covermode=atomic -race ./...
