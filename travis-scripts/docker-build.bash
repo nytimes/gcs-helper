@@ -23,7 +23,7 @@ fi
 IMAGE_NAME=nytimes/gcs-helper
 
 docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
-docker build -t ${IMAGE_NAME}:latest -f Dockerfile.ci .
+docker build -t ${IMAGE_NAME}:latest .
 
 if [ -n "${TRAVIS_TAG}" ]; then
 	docker tag ${IMAGE_NAME}:latest ${IMAGE_NAME}:${TRAVIS_TAG}
