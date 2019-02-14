@@ -12,10 +12,9 @@ install:
 script:
   - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
   - go test -coverprofile=coverage.txt -covermode=atomic -race ./...
-  - CGO_ENABLED=0 go build -o gcs-helper
+  - travis-scripts/docker-build.bash
 after_success:
   - bash <(curl -s https://codecov.io/bash)
-  - travis-scripts/docker-build.bash
 go:
   - 1.x
   - tip

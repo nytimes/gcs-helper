@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+export CGO_ENABLED=0
+
 if [ "${TRAVIS_PULL_REQUEST}" != "false" ]; then
 	echo >&2 "Skipping image build on pull requests..."
 	exit 0
@@ -22,6 +24,7 @@ fi
 
 IMAGE_NAME=nytimes/gcs-helper
 
+go build -o gcs-helper
 docker login -u "${DOCKER_USERNAME}" -p "${DOCKER_PASSWORD}"
 docker build -t ${IMAGE_NAME}:latest .
 
