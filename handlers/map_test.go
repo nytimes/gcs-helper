@@ -13,7 +13,7 @@ import (
 
 func TestServerMapListOfFiles(t *testing.T) {
 	t.Parallel()
-	addr, cleanup := testMapServer(Config{
+	addr, cleanup := testMapServer(t, Config{
 		BucketName: "my-bucket",
 		Map:        MapConfig{RegexFilter: `\.mp4$`},
 		Proxy:      ProxyConfig{Timeout: time.Second},
@@ -67,7 +67,7 @@ func TestServerMapListOfFiles(t *testing.T) {
 
 func TestServerMapInvalidMethod(t *testing.T) {
 	t.Parallel()
-	addr, cleanup := testMapServer(Config{
+	addr, cleanup := testMapServer(t, Config{
 		BucketName: "my-bucket",
 		Map:        MapConfig{RegexFilter: `\.mp4$`},
 		Proxy:      ProxyConfig{Timeout: time.Second},
@@ -85,7 +85,7 @@ func TestServerMapInvalidMethod(t *testing.T) {
 
 func TestServerMapInvalidPrefix(t *testing.T) {
 	t.Parallel()
-	addr, cleanup := testMapServer(Config{
+	addr, cleanup := testMapServer(t, Config{
 		BucketName: "my-bucket",
 		Map:        MapConfig{RegexFilter: `\.mp4$`},
 		Proxy:      ProxyConfig{Timeout: time.Second},
@@ -103,7 +103,7 @@ func TestServerMapInvalidPrefix(t *testing.T) {
 
 func TestServerMapBucketNotFound(t *testing.T) {
 	t.Parallel()
-	addr, cleanup := testMapServer(Config{
+	addr, cleanup := testMapServer(t, Config{
 		BucketName: "some-bucket",
 		Map: MapConfig{
 			Endpoint: "/map",

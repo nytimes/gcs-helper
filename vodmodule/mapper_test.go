@@ -12,7 +12,7 @@ import (
 )
 
 func TestMap(t *testing.T) {
-	server, bucket := fakeBucketHandle("my-bucket")
+	server, bucket := fakeBucketHandle(t, "my-bucket")
 	defer server.Stop()
 	mapper := NewMapper(bucket)
 
@@ -98,7 +98,13 @@ func TestMap(t *testing.T) {
 	}
 }
 
-func fakeBucketHandle(bucketName string) (*fakestorage.Server, *storage.BucketHandle) {
-	server := fakestorage.NewServer(testhelper.FakeObjects)
+func fakeBucketHandle(t *testing.T, bucketName string) (*fakestorage.Server, *storage.BucketHandle) {
+	server, err := fakestorage.NewServerWithOptions(fakestorage.Options{
+		InitialObjects: testhelper.FakeObjects,
+		NoListener:     true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	return server, server.Client().Bucket(bucketName)
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func TestServerMultiPrefixes(t *testing.T) {
-	addr, cleanup := startServer(handlers.Config{
+	addr, cleanup := startServer(t, handlers.Config{
 		BucketName: "my-bucket",
 		Map: handlers.MapConfig{
 			Endpoint:    "/map/",
@@ -136,8 +136,14 @@ func TestServerMultiPrefixes(t *testing.T) {
 	}
 }
 
-func startServer(cfg handlers.Config) (string, func()) {
-	server := fakestorage.NewServer(testhelper.FakeObjects)
+func startServer(t *testing.T, cfg handlers.Config) (string, func()) {
+	server, err := fakestorage.NewServerWithOptions(fakestorage.Options{
+		InitialObjects: testhelper.FakeObjects,
+		NoListener:     true,
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
 	handler := getHandler(cfg, server.Client(), server.HTTPClient())
 	httpServer := httptest.NewServer(handler)
 	return httpServer.URL, func() {

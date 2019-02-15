@@ -9,7 +9,7 @@ import (
 )
 
 func TestProxyHandler(t *testing.T) {
-	addr, cleanup := testProxyServer(Config{
+	addr, cleanup := testProxyServer(t, Config{
 		BucketName: "my-bucket",
 		Proxy: ProxyConfig{
 			LogHeaders: []string{"Accept", "User-Agent", "Range"},
@@ -109,7 +109,7 @@ func TestProxyHandler(t *testing.T) {
 }
 
 func TestServerProxyHandlerBucketInThePath(t *testing.T) {
-	addr, cleanup := testProxyServer(Config{
+	addr, cleanup := testProxyServer(t, Config{
 		BucketName: "my-bucket",
 		Proxy: ProxyConfig{
 			Endpoint:     "/proxy/",
@@ -143,7 +143,7 @@ func TestServerProxyHandlerBucketInThePath(t *testing.T) {
 }
 
 func TestServerProxyHandlerBucketNotFound(t *testing.T) {
-	addr, cleanup := testProxyServer(Config{BucketName: "some-bucket", Proxy: ProxyConfig{Timeout: time.Second}})
+	addr, cleanup := testProxyServer(t, Config{BucketName: "some-bucket", Proxy: ProxyConfig{Timeout: time.Second}})
 	defer cleanup()
 	req, _ := http.NewRequest(http.MethodHead, addr+"/whatever", nil)
 	resp, err := http.DefaultClient.Do(req)
