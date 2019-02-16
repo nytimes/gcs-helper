@@ -3,7 +3,6 @@ sudo: false
 cache:
   directories:
     - $GOPATH/pkg
-    - $GOPATH/bin
 services:
   - docker
 install:
