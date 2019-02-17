@@ -7,6 +7,5 @@ require (
 	github.com/google/gops v0.3.6
 	github.com/kelseyhightower/envconfig v1.3.0
 	github.com/sirupsen/logrus v1.3.0
-	golang.org/x/sys v0.0.0-20181228144115-9a3f9b0469bb // indirect
 	google.golang.org/api v0.1.0
 )
