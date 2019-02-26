@@ -10,7 +10,6 @@ install:
   - curl https://install.goreleaser.com/github.com/golangci/golangci-lint.sh | BINDIR=$GOPATH/bin sh
   - go mod download
 script:
-  - export GOCACHE=$GOPATH/pkg/cache
   - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
   - go test -coverprofile=coverage.txt -covermode=atomic -race -vet all ./...
   - travis-scripts/docker-build.bash
