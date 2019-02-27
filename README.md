@@ -8,8 +8,8 @@ gcs-helper is inspired by
 access to private GCS buckets.
 
 It was designed to be used with [Kaltura's
-nginx-vod-module](https://github.com/kaltura/nginx-vod-module), but it can work
-stand-alone too, specially the proxy feature.
+nginx-vod-module](https://github.com/kaltura/nginx-vod-module), but it can also
+work as a standalone proxy.
 
 Specific to nginx-vod-module, gcs-helper provides support for the mapped mode
 (when using the proper environment variables - ``GCS_HELPER_PROXY_PREFIX``,
