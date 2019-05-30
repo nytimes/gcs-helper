@@ -29,7 +29,7 @@ steps:
     image: golangci/golangci-lint
     pull: always
     commands:
-      - golangci-lint run --enable-all -D lll -D errcheck ./...
+      - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
     depends_on:
       - mod-download
 
