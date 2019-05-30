@@ -1,0 +1,71 @@
+---
+kind: pipeline
+name: default
+
+platform:
+  os: linux
+  arch: amd64
+
+workspace:
+  base: /go
+  path: gcs-helper
+
+steps:
+  - name: mod-download
+    image: &goimage "golang:1.12.5"
+    commands:
+      - go mod download
+    environment:
+      GOPROXY: https://proxy.golang.org
+
+  - name: test
+    image: *goimage
+    commands:
+      - go test -race -vet all -mod readonly ./...
+    depends_on:
+      - mod-download
+
+  - name: lint
+    image: golangci/golangci-lint
+    pull: always
+    commands:
+      - golangci-lint run --enable-all -D lll -D errcheck ./...
+    depends_on:
+      - mod-download
+
+  - name: build
+    image: *goimage
+    commands:
+      - go build -o gcs-helper -mod readonly
+    environment:
+      CGO_ENABLED: 0
+    depends_on:
+      - mod-download
+
+  - name: test-dockerfile
+    image: plugins/docker
+    settings:
+      repo: nytimes/gcs-helper
+      dry_run: true
+    when:
+      event: pull_request
+    depends_on:
+      - build
+
+  - name: build-and-push-to-dockerhub
+    image: plugins/docker
+    settings:
+      repo: nytimes/gcs-helper
+      auto_tag: true
+      username:
+        from_secret: docker_username
+      password:
+        from_secret: docker_password
+    when:
+      ref:
+        - refs/tags/*
+        - refs/heads/master
+    depends_on:
+      - test
+      - lint
+      - build

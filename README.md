@@ -1,6 +1,6 @@
 # gcs-helper
 
-[![Build Status](https://travis-ci.org/nytimes/gcs-helper.svg?branch=master)](https://travis-ci.org/nytimes/gcs-helper)
+[![Build Status](https://cloud.drone.io/api/badges/nytimes/gcs-helper/status.svg)](https://cloud.drone.io/nytimes/gcs-helper)
 [![codecov](https://codecov.io/gh/nytimes/gcs-helper/branch/master/graph/badge.svg)](https://codecov.io/gh/nytimes/gcs-helper)
 
 gcs-helper is inspired by
