@@ -24,6 +24,7 @@ func TestServerMapListOfFiles(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("wrong status code\nwant %d\ngot  %d", http.StatusOK, resp.StatusCode)
 	}
@@ -78,6 +79,7 @@ func TestServerMapInvalidMethod(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusMethodNotAllowed {
 		t.Errorf("wrong status code\nwant %d\ngot  %d", http.StatusMethodNotAllowed, resp.StatusCode)
 	}
@@ -96,6 +98,7 @@ func TestServerMapInvalidPrefix(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("wrong status code\nwant %d\ngot  %d", http.StatusBadRequest, resp.StatusCode)
 	}
@@ -119,6 +122,7 @@ func TestServerMapBucketNotFound(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Errorf("wrong status code\nwant %d\ngot  %d", http.StatusInternalServerError, resp.StatusCode)
 	}
