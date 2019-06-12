@@ -12,7 +12,7 @@ workspace:
 
 steps:
   - name: mod-download
-    image: &goimage "golang:1.12.5"
+    image: &goimage "golang:1.12.6"
     commands:
       - go mod download
     environment:
