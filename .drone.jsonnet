@@ -5,7 +5,7 @@ local test_ci_dockerfile = {
   name: 'test-ci-dockerfile',
   image: 'plugins/docker',
   settings: {
-    repo: 'nytime/gcs-helper',
+    repo: 'nytimes/gcs-helper',
     dry_run: true,
   },
   when: {
@@ -18,7 +18,7 @@ local push_to_dockerhub = {
   name: 'build-and-push-to-dockerhub',
   image: 'plugins/docker',
   settings: {
-    repo: 'nytime/gcs-helper',
+    repo: 'nytimes/gcs-helper',
     auto_tag: true,
     username: { from_secret: 'docker_username' },
     password: { from_secret: 'docker_password' },

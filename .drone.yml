@@ -46,7 +46,7 @@ steps:
   image: plugins/docker
   settings:
     dry_run: true
-    repo: nytime/gcs-helper
+    repo: nytimes/gcs-helper
   when:
     event:
     - pull_request
@@ -59,7 +59,7 @@ steps:
     auto_tag: true
     password:
       from_secret: docker_password
-    repo: nytime/gcs-helper
+    repo: nytimes/gcs-helper
     username:
       from_secret: docker_username
   when:
