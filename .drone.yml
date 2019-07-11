@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: default
+name: build_go_1.12.7
 
 platform:
   os: linux
@@ -8,64 +8,111 @@ platform:
 
 workspace:
   base: /go
-  path: gcs-helper
+  path: gcs-helper-1.12.7
 
 steps:
-  - name: mod-download
-    image: &goimage "golang:1.12.7"
-    commands:
-      - go mod download
-    environment:
-      GOPROXY: https://proxy.golang.org
+- name: mod-download
+  image: golang:1.12.7
+  commands:
+  - go mod download
+  environment:
+    GOPROXY: https://proxy.golang.org
+  depends_on:
+  - clone
 
-  - name: test
-    image: *goimage
-    commands:
-      - go test -race -vet all -mod readonly ./...
-    depends_on:
-      - mod-download
+- name: test
+  image: golang:1.12.7
+  commands:
+  - go test -race -vet all -mod readonly ./...
+  depends_on:
+  - mod-download
 
-  - name: lint
-    image: golangci/golangci-lint
-    pull: always
-    commands:
-      - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
-    depends_on:
-      - mod-download
+- name: lint
+  pull: always
+  image: golangci/golangci-lint
+  commands:
+  - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
+  depends_on:
+  - mod-download
 
-  - name: build
-    image: *goimage
-    commands:
-      - go build -o gcs-helper -mod readonly
-    environment:
-      CGO_ENABLED: 0
-    depends_on:
-      - mod-download
+- name: build
+  image: golang:1.12.7
+  commands:
+  - go build -o gcs-helper -mod readonly
+  depends_on:
+  - mod-download
 
-  - name: test-dockerfile
-    image: plugins/docker
-    settings:
-      repo: nytimes/gcs-helper
-      dry_run: true
-    when:
-      event: pull_request
-    depends_on:
-      - build
+- name: test-ci-dockerfile
+  image: plugins/docker
+  settings:
+    dry_run: true
+    repo: nytime/gcs-helper
+  when:
+    event:
+    - pull_request
+  depends_on:
+  - build
 
-  - name: build-and-push-to-dockerhub
-    image: plugins/docker
-    settings:
-      repo: nytimes/gcs-helper
-      auto_tag: true
-      username:
-        from_secret: docker_username
-      password:
-        from_secret: docker_password
-    when:
-      ref:
-        - refs/tags/*
-        - refs/heads/master
-    depends_on:
-      - test
-      - lint
-      - build
+- name: build-and-push-to-dockerhub
+  image: plugins/docker
+  settings:
+    auto_tag: true
+    password:
+      from_secret: docker_password
+    repo: nytime/gcs-helper
+    username:
+      from_secret: docker_username
+  when:
+    ref:
+    - "refs/tags/*"
+    - refs/heads/master
+  depends_on:
+  - test
+  - lint
+  - build
+
+---
+kind: pipeline
+name: build_go_1.13beta1
+
+platform:
+  os: linux
+  arch: amd64
+
+workspace:
+  base: /go
+  path: gcs-helper-1.13beta1
+
+steps:
+- name: mod-download
+  image: golang:1.13beta1
+  commands:
+  - go mod download
+  environment:
+    GOPROXY: https://proxy.golang.org
+  depends_on:
+  - clone
+
+- name: test
+  image: golang:1.13beta1
+  commands:
+  - go test -race -vet all -mod readonly ./...
+  depends_on:
+  - mod-download
+
+- name: lint
+  pull: always
+  image: golangci/golangci-lint
+  commands:
+  - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...
+  depends_on:
+  - mod-download
+
+- name: build
+  image: golang:1.13beta1
+  commands:
+  - go build -o gcs-helper -mod readonly
+  depends_on:
+  - mod-download
+
+...
