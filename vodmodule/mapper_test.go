@@ -16,7 +16,7 @@ func TestMap(t *testing.T) {
 	defer server.Stop()
 	mapper := NewMapper(bucket)
 
-	var tests = []struct {
+	tests := []struct {
 		name     string
 		input    MapOptions
 		expected Mapping

@@ -24,7 +24,7 @@ func TestServerMultiPrefixes(t *testing.T) {
 		},
 	})
 	defer cleanup()
-	var tests = []testhelper.ServerTest{
+	tests := []testhelper.ServerTest{
 		{
 			TestCase:       "healthcheck",
 			Method:         http.MethodGet,
