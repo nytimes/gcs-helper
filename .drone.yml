@@ -39,6 +39,8 @@ steps:
   image: golang:1.12.7
   commands:
   - go build -o gcs-helper -mod readonly
+  environment:
+    CGO_ENABLED: 0
   depends_on:
   - mod-download
 
@@ -112,6 +114,8 @@ steps:
   image: golang:1.13beta1
   commands:
   - go build -o gcs-helper -mod readonly
+  environment:
+    CGO_ENABLED: 0
   depends_on:
   - mod-download
 
