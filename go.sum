@@ -16,6 +16,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fsouza/fake-gcs-server v1.10.0 h1:gF4yqO7cAuW5j9ybgZXF7NJ2iBVX+FWmyIHKhB51P20=
 github.com/fsouza/fake-gcs-server v1.10.0/go.mod h1:qVc/kXgaTt/BreHIB841Ut6aZLrmitGbxF0MqNXVWPw=
+github.com/fsouza/fake-gcs-server v1.10.1 h1:glA8FxcF9mczYqI2PhayXaW7huVIMvP4Cgqp9UKpQu0=
+github.com/fsouza/fake-gcs-server v1.10.1/go.mod h1:VkVJOuxotrgw677SU5ag5LeUvGk5xuMUaCxAYa7Grbw=
 github.com/go-ole/go-ole v1.2.1 h1:2lOsA72HgjxAuMlKpFiCbHTvu44PIVkZ5hqm3RSdI/E=
 github.com/go-ole/go-ole v1.2.1/go.mod h1:7FAglXiTm7HKlQRDeOQ6ZNUHidzCWXuZWq/1dTyBNF8=
 github.com/golang/glog v0.0.0-20160126235308-23def4e6c14b h1:VKtxabqXZkF25pY9ekfRL6a582T4P37/31XEstQ5p58=
