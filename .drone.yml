@@ -80,15 +80,25 @@ steps:
   - lint
   - build
 
-- name: docker-sanity-check
+- name: docker-sanity-check-push
   pull: always
-  image: nytimes/gcs-helper
+  image: nytimes/gcs-helper:latest
+  commands:
+  - gcs-helper -version
+  when:
+    ref:
+    - refs/heads/master
+  depends_on:
+  - build-and-push-to-dockerhub
+
+- name: docker-sanity-check-tag
+  pull: always
+  image: "nytimes/gcs-helper:${DRONE_TAG}"
   commands:
   - gcs-helper -version
   when:
     ref:
     - "refs/tags/*"
-    - refs/heads/master
   depends_on:
   - build-and-push-to-dockerhub
 

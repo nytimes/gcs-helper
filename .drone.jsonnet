@@ -32,16 +32,13 @@ local push_to_dockerhub = {
   depends_on: ['test', 'lint', 'build'],
 };
 
-local docker_sanity_check = {
-  name: 'docker-sanity-check',
-  image: 'nytimes/gcs-helper',
+local docker_sanity_check(name, image_version, refs) = {
+  name: 'docker-sanity-check-%(name)s' % { name: name },
+  image: 'nytimes/gcs-helper:%(image_version)s' % { image_version: image_version },
   pull: 'always',
   commands: ['gcs-helper -version'],
   when: {
-    ref: [
-      'refs/tags/*',
-      'refs/heads/master',
-    ],
+    ref: refs,
   },
   depends_on: ['build-and-push-to-dockerhub'],
 };
@@ -49,7 +46,8 @@ local docker_sanity_check = {
 local dockerfile_steps = [
   test_ci_dockerfile,
   push_to_dockerhub,
-  docker_sanity_check,
+  docker_sanity_check('push', 'latest', ['refs/heads/master']),
+  docker_sanity_check('tag', '${DRONE_TAG}', ['refs/tags/*']),
 ];
 
 local mod_download(go_version) = {
