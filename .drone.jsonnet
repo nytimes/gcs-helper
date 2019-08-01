@@ -32,9 +32,24 @@ local push_to_dockerhub = {
   depends_on: ['test', 'lint', 'build'],
 };
 
+local docker_sanity_check = {
+  name: 'docker-sanity-check',
+  image: 'nytimes/gcs-helper',
+  pull: 'always',
+  commands: ['gcs-helper -version'],
+  when: {
+    ref: [
+      'refs/tags/*',
+      'refs/heads/master',
+    ],
+  },
+  depends_on: ['build-and-push-to-dockerhub'],
+};
+
 local dockerfile_steps = [
   test_ci_dockerfile,
   push_to_dockerhub,
+  docker_sanity_check,
 ];
 
 local mod_download(go_version) = {
@@ -68,6 +83,13 @@ local build(go_version) = {
   depends_on: ['mod-download'],
 };
 
+local sanity_check = {
+  name: 'sanity-check',
+  image: 'alpine',
+  commands: ['./gcs-helper -version'],
+  depends_on: ['build'],
+};
+
 local pipeline(go_version) = {
   kind: 'pipeline',
   name: 'build_go_%(go_version)s' % { go_version: go_version },
@@ -80,6 +102,7 @@ local pipeline(go_version) = {
     tests(go_version),
     lint,
     build(go_version),
+    sanity_check,
   ] + if go_version == go_versions[0] then dockerfile_steps else [],
 };
 

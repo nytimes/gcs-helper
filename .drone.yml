@@ -44,6 +44,13 @@ steps:
   depends_on:
   - mod-download
 
+- name: sanity-check
+  image: alpine
+  commands:
+  - ./gcs-helper -version
+  depends_on:
+  - build
+
 - name: test-ci-dockerfile
   image: plugins/docker
   settings:
@@ -72,6 +79,18 @@ steps:
   - test
   - lint
   - build
+
+- name: docker-sanity-check
+  pull: always
+  image: nytimes/gcs-helper
+  commands:
+  - gcs-helper -version
+  when:
+    ref:
+    - "refs/tags/*"
+    - refs/heads/master
+  depends_on:
+  - build-and-push-to-dockerhub
 
 ---
 kind: pipeline
@@ -118,5 +137,12 @@ steps:
     CGO_ENABLED: 0
   depends_on:
   - mod-download
+
+- name: sanity-check
+  image: alpine
+  commands:
+  - ./gcs-helper -version
+  depends_on:
+  - build
 
 ...
