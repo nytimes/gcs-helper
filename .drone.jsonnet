@@ -47,7 +47,7 @@ local dockerfile_steps = [
   test_ci_dockerfile,
   push_to_dockerhub,
   docker_sanity_check('push', 'latest', ['refs/heads/master']),
-  docker_sanity_check('tag', '${DRONE_TAG}', ['refs/tags/*']),
+  docker_sanity_check('tag', '${DRONE_TAG#v}', ['refs/tags/*']),
 ];
 
 local mod_download(go_version) = {

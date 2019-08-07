@@ -93,7 +93,7 @@ steps:
 
 - name: docker-sanity-check-tag
   pull: always
-  image: "nytimes/gcs-helper:${DRONE_TAG}"
+  image: "nytimes/gcs-helper:${DRONE_TAG#v}"
   commands:
   - gcs-helper -version
   when:
