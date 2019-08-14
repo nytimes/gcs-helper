@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: build_go_1.12.7
+name: build_go_1.12.8
 
 platform:
   os: linux
@@ -8,11 +8,11 @@ platform:
 
 workspace:
   base: /go
-  path: gcs-helper-1.12.7
+  path: gcs-helper-1.12.8
 
 steps:
 - name: mod-download
-  image: golang:1.12.7
+  image: golang:1.12.8
   commands:
   - go mod download
   environment:
@@ -21,7 +21,7 @@ steps:
   - clone
 
 - name: test
-  image: golang:1.12.7
+  image: golang:1.12.8
   commands:
   - go test -race -vet all -mod readonly ./...
   depends_on:
@@ -36,7 +36,7 @@ steps:
   - mod-download
 
 - name: build
-  image: golang:1.12.7
+  image: golang:1.12.8
   commands:
   - "go build -o gcs-helper -mod readonly -ldflags \"-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}\""
   environment:
