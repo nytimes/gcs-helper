@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"strings"
 
@@ -13,6 +14,7 @@ func getHandler(c handlers.Config, client *storage.Client, hc *http.Client) http
 	mapHandler := handlers.Map(c, client)
 
 	return func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("Request -> ", r.URL)
 		switch {
 		case strings.HasPrefix(r.URL.Path, c.Proxy.Endpoint):
 			r.URL.Path = strings.Replace(r.URL.Path, c.Proxy.Endpoint, "", 1)
