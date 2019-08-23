@@ -27,8 +27,9 @@ func Map(c Config, client *storage.Client) http.Handler {
 			return
 		}
 		m, err := mapper.Map(r.Context(), vodmodule.MapOptions{
-			Prefix: prefix,
-			Filter: filter,
+			Prefix:        prefix,
+			Filter:        filter,
+			ProxyEndpoint: c.Proxy.Endpoint,
 		})
 		if err != nil {
 			logger.WithError(err).WithField("prefix", prefix).Error("failed to map request")

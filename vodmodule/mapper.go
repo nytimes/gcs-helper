@@ -25,7 +25,8 @@ func NewMapper(bucket *storage.BucketHandle) *Mapper {
 
 // MapOptions represents the set of options that can be passed to Map.
 type MapOptions struct {
-	Prefix string
+	ProxyEndpoint string
+	Prefix        string
 
 	// Optional regexp that is used to filter the list of objects.
 	Filter *regexp.Regexp
@@ -38,11 +39,11 @@ type MapOptions struct {
 func (m *Mapper) Map(ctx context.Context, opts MapOptions) (Mapping, error) {
 	var err error
 	r := Mapping{}
-	r.Sequences, err = m.getSequences(ctx, opts.Prefix, opts.Filter)
+	r.Sequences, err = m.getSequences(ctx, opts.Prefix, opts.Filter, opts.ProxyEndpoint)
 	return r, err
 }
 
-func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp.Regexp) ([]Sequence, error) {
+func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp.Regexp, proxyEndpoint string) ([]Sequence, error) {
 	var err error
 	for i := 0; i < maxTries; i++ {
 		iter := m.bucket.Objects(ctx, &storage.Query{
@@ -56,7 +57,7 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 			filename := path.Base(obj.Name)
 			if filter == nil || filter.MatchString(filename) {
 				seqs = append(seqs, Sequence{
-					Clips: []Clip{{Type: "source", Path: "/" + obj.Bucket + "/" + obj.Name}},
+					Clips: []Clip{{Type: "source", Path: proxyEndpoint + "/" + obj.Name}},
 				})
 			}
 		}
