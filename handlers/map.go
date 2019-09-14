@@ -18,6 +18,7 @@ func Map(c Config, client *storage.Client) http.Handler {
 	logger := c.Logger()
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer r.Body.Close()
+		fmt.Println("URL:", r.URL)
 		if r.Method != http.MethodGet {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
@@ -26,7 +27,6 @@ func Map(c Config, client *storage.Client) http.Handler {
 		if val, ok := r.URL.Query()["breaks"]; ok {
 			chapterBreaks = val[0]
 		}
-		fmt.Println("URL:", r.URL.Query())
 		prefix := strings.TrimLeft(r.URL.Path, "/")
 		if prefix == "" {
 			http.Error(w, "prefix cannot be empty", http.StatusBadRequest)
