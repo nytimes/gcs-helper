@@ -40,6 +40,7 @@ func (m *Mapper) Map(ctx context.Context, opts MapOptions) (Mapping, error) {
 	var err error
 	r := Mapping{}
 	r.Sequences, err = m.getSequences(ctx, opts.Prefix, opts.Filter, opts.ProxyEndpoint)
+	r.Durations = []int{20000, 5000, 6000000}
 	return r, err
 }
 
@@ -56,9 +57,27 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 		for ; err == nil; obj, err = iter.Next() {
 			filename := path.Base(obj.Name)
 			if filter == nil || filter.MatchString(filename) {
-				seqs = append(seqs, Sequence{
-					Clips: []Clip{{Type: "source", Path: proxyEndpoint + "/" + obj.Name}},
-				})
+				sequence := Sequence{
+					Clips: []Clip{
+						{
+							Type:   "source",
+							Path:   proxyEndpoint + "/" + obj.Name,
+							ClipTo: 20000,
+						},
+						{
+							Type:     "source",
+							Path:     proxyEndpoint + "/" + obj.Name,
+							ClipFrom: 10000,
+							ClipTo:   15000,
+						},
+						{
+							Type:     "source",
+							Path:     proxyEndpoint + "/" + obj.Name,
+							ClipFrom: 15000,
+						},
+					},
+				}
+				seqs = append(seqs, sequence)
 			}
 		}
 		if err == iterator.Done {
