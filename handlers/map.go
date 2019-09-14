@@ -25,7 +25,9 @@ func Map(c Config, client *storage.Client) http.Handler {
 		}
 		chapterBreaks := ""
 		if val, ok := r.URL.Query()["breaks"]; ok {
-			chapterBreaks = val[0]
+			if val[0] != "_" {
+				chapterBreaks = val[0]
+			}
 		}
 		prefix := strings.TrimLeft(r.URL.Path, "/")
 		if prefix == "" {
