@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
@@ -21,6 +22,11 @@ func Map(c Config, client *storage.Client) http.Handler {
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
+		chapterBreaks := ""
+		if val, ok := r.URL.Query()["breaks"]; ok {
+			chapterBreaks = val[0]
+		}
+		fmt.Println("URL:", r.URL.Query())
 		prefix := strings.TrimLeft(r.URL.Path, "/")
 		if prefix == "" {
 			http.Error(w, "prefix cannot be empty", http.StatusBadRequest)
@@ -30,6 +36,7 @@ func Map(c Config, client *storage.Client) http.Handler {
 			Prefix:        prefix,
 			Filter:        filter,
 			ProxyEndpoint: c.Proxy.Endpoint,
+			ChapterBreaks: chapterBreaks,
 		})
 		if err != nil {
 			logger.WithError(err).WithField("prefix", prefix).Error("failed to map request")

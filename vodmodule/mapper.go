@@ -4,6 +4,8 @@ import (
 	"context"
 	"path"
 	"regexp"
+	"strconv"
+	"strings"
 
 	"cloud.google.com/go/storage"
 	"google.golang.org/api/iterator"
@@ -28,6 +30,9 @@ type MapOptions struct {
 	ProxyEndpoint string
 	Prefix        string
 
+	// Optional and specific to cbsinteractive case
+	ChapterBreaks string
+
 	// Optional regexp that is used to filter the list of objects.
 	Filter *regexp.Regexp
 }
@@ -39,12 +44,14 @@ type MapOptions struct {
 func (m *Mapper) Map(ctx context.Context, opts MapOptions) (Mapping, error) {
 	var err error
 	r := Mapping{}
-	r.Sequences, err = m.getSequences(ctx, opts.Prefix, opts.Filter, opts.ProxyEndpoint)
-	r.Durations = []int{20000, 5000, 6000000}
+	if opts.ChapterBreaks != "" {
+		r.Durations, _ = m.chapterBreaksToDurations(opts.ChapterBreaks)
+	}
+	r.Sequences, err = m.getSequences(ctx, opts.Prefix, opts.Filter, opts.ProxyEndpoint, r.Durations)
 	return r, err
 }
 
-func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp.Regexp, proxyEndpoint string) ([]Sequence, error) {
+func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp.Regexp, proxyEndpoint string, durations []int) ([]Sequence, error) {
 	var err error
 	for i := 0; i < maxTries; i++ {
 		iter := m.bucket.Objects(ctx, &storage.Query{
@@ -57,27 +64,34 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 		for ; err == nil; obj, err = iter.Next() {
 			filename := path.Base(obj.Name)
 			if filter == nil || filter.MatchString(filename) {
-				sequence := Sequence{
-					Clips: []Clip{
-						{
-							Type:   "source",
-							Path:   proxyEndpoint + "/" + obj.Name,
-							ClipTo: 20000,
-						},
-						{
+				if len(durations) > 0 {
+					previousDuration := 0
+					clips := []Clip{}
+					for i := range durations {
+						clip := Clip{
 							Type:     "source",
 							Path:     proxyEndpoint + "/" + obj.Name,
-							ClipFrom: 10000,
-							ClipTo:   15000,
+							ClipFrom: previousDuration,
+						}
+						if i != len(durations)-1 {
+							clip.ClipTo = durations[i] + previousDuration
+						}
+						clips = append(clips, clip)
+						previousDuration = durations[i] + previousDuration
+					}
+					sequence := Sequence{Clips: clips}
+					seqs = append(seqs, sequence)
+				} else {
+					sequence := Sequence{
+						Clips: []Clip{
+							{
+								Type: "source",
+								Path: proxyEndpoint + "/" + obj.Name,
+							},
 						},
-						{
-							Type:     "source",
-							Path:     proxyEndpoint + "/" + obj.Name,
-							ClipFrom: 15000,
-						},
-					},
+					}
+					seqs = append(seqs, sequence)
 				}
-				seqs = append(seqs, sequence)
 			}
 		}
 		if err == iterator.Done {
@@ -85,4 +99,32 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 		}
 	}
 	return nil, err
+}
+
+func (m *Mapper) chapterBreaksToDurations(chapterBreaks string) ([]int, error) {
+	var err error
+	previousTimestamp := 0
+	splittedChapterBreaks := strings.Split(chapterBreaks, ",")
+	result := make([]int, 0) // is there something better than this?
+	for i := range splittedChapterBreaks {
+		chapterBreakInMs := m.convertChapterBreakInMs(splittedChapterBreaks[i])
+		result = append(result, chapterBreakInMs-previousTimestamp)
+		previousTimestamp = chapterBreakInMs
+	}
+	return result, err
+}
+
+// convertChapterBreakInMs is amazing
+func (m *Mapper) convertChapterBreakInMs(chapterBreak string) int {
+	var hrs, mins, secs int
+	splittedChapter := strings.Split(chapterBreak, ":")
+	if len(splittedChapter) == 2 {
+		mins, _ = strconv.Atoi(splittedChapter[0])
+		secs, _ = strconv.Atoi(splittedChapter[1])
+	} else {
+		hrs, _ = strconv.Atoi(splittedChapter[0])
+		mins, _ = strconv.Atoi(splittedChapter[1])
+		secs, _ = strconv.Atoi(splittedChapter[2])
+	}
+	return hrs*3600000 + mins*60000 + secs*1000
 }
