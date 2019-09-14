@@ -2,12 +2,15 @@ package vodmodule
 
 import (
 	"context"
+	"fmt"
 	"path"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"cloud.google.com/go/storage"
+	"github.com/cbsinteractive/mediabench/pkg/mediainfo"
+	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 )
 
@@ -45,7 +48,7 @@ func (m *Mapper) Map(ctx context.Context, opts MapOptions) (Mapping, error) {
 	var err error
 	r := Mapping{}
 	if opts.ChapterBreaks != "" {
-		r.Durations, _ = m.chapterBreaksToDurations(opts.ChapterBreaks)
+		r.Durations, _ = m.chapterBreaksToDurations(ctx, opts.ChapterBreaks, opts.ProxyEndpoint, opts.Prefix)
 	}
 	r.Sequences, err = m.getSequences(ctx, opts.Prefix, opts.Filter, opts.ProxyEndpoint, r.Durations)
 	return r, err
@@ -61,6 +64,7 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 		seqs := []Sequence{}
 		var obj *storage.ObjectAttrs
 		obj, err = iter.Next()
+
 		for ; err == nil; obj, err = iter.Next() {
 			filename := path.Base(obj.Name)
 			if filter == nil || filter.MatchString(filename) {
@@ -101,16 +105,32 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 	return nil, err
 }
 
-func (m *Mapper) chapterBreaksToDurations(chapterBreaks string) ([]int, error) {
+func (m *Mapper) chapterBreaksToDurations(ctx context.Context, chapterBreaks string, endpoint string, prefix string) ([]int, error) {
 	var err error
+	var obj *storage.ObjectAttrs
+
 	previousTimestamp := 0
+	totalDurations := 0
 	splittedChapterBreaks := strings.Split(chapterBreaks, ",")
 	result := make([]int, 0) // is there something better than this?
 	for i := range splittedChapterBreaks {
 		chapterBreakInMs := m.convertChapterBreakInMs(splittedChapterBreaks[i])
 		result = append(result, chapterBreakInMs-previousTimestamp)
+		totalDurations = totalDurations + chapterBreakInMs
 		previousTimestamp = chapterBreakInMs
 	}
+
+	logger := log.New()
+	iter := m.bucket.Objects(ctx, &storage.Query{
+		Prefix:    prefix,
+		Delimiter: "/",
+	})
+	obj, _ = iter.Next() // ignoring error for now
+	fileURL := fmt.Sprintf("%s/%s", endpoint, obj.Name)
+	mi, _ := mediainfo.New(fileURL, logger, "sample_file")
+
+	result = append(result, int(mi.General.Duration.Val)-totalDurations) // last piece should have all the content
+
 	return result, err
 }
 

@@ -37,7 +37,7 @@ func Map(c Config, client *storage.Client) http.Handler {
 		m, err := mapper.Map(r.Context(), vodmodule.MapOptions{
 			Prefix:        prefix,
 			Filter:        filter,
-			ProxyEndpoint: c.Proxy.Endpoint,
+			ProxyEndpoint: fmt.Sprintf("http://localhost%s%s", c.Listen, c.Proxy.Endpoint),
 			ChapterBreaks: chapterBreaks,
 		})
 		if err != nil {
