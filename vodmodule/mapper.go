@@ -36,6 +36,9 @@ type MapOptions struct {
 	// Optional and specific to cbsinteractive case
 	ChapterBreaks string
 
+	// Optional used  to build url and fetch duration with mediainfo
+	ProxyListen string
+
 	// Optional regexp that is used to filter the list of objects.
 	Filter *regexp.Regexp
 }
@@ -48,7 +51,7 @@ func (m *Mapper) Map(ctx context.Context, opts MapOptions) (Mapping, error) {
 	var err error
 	r := Mapping{}
 	if opts.ChapterBreaks != "" {
-		r.Durations, _ = m.chapterBreaksToDurations(ctx, opts.ChapterBreaks, opts.ProxyEndpoint, opts.Prefix)
+		r.Durations, _ = m.chapterBreaksToDurations(ctx, opts.ChapterBreaks, opts.ProxyListen, opts.ProxyEndpoint, opts.Prefix)
 	}
 	r.Sequences, err = m.getSequences(ctx, opts.Prefix, opts.Filter, opts.ProxyEndpoint, r.Durations)
 	return r, err
@@ -105,7 +108,7 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 	return nil, err
 }
 
-func (m *Mapper) chapterBreaksToDurations(ctx context.Context, chapterBreaks string, endpoint string, prefix string) ([]int, error) {
+func (m *Mapper) chapterBreaksToDurations(ctx context.Context, chapterBreaks string, proxyListen string, endpoint string, prefix string) ([]int, error) {
 	var err error
 	var obj *storage.ObjectAttrs
 
@@ -126,7 +129,7 @@ func (m *Mapper) chapterBreaksToDurations(ctx context.Context, chapterBreaks str
 		Delimiter: "/",
 	})
 	obj, _ = iter.Next() // ignoring error for now
-	fileURL := fmt.Sprintf("%s/%s", endpoint, obj.Name)
+	fileURL := fmt.Sprintf("http://127.0.0.1%s%s/%s", proxyListen, endpoint, obj.Name)
 	mi, _ := mediainfo.New(fileURL, logger, "sample_file")
 
 	result = append(result, int(mi.General.Duration.Val)-totalDurations) // last piece should have all the content
