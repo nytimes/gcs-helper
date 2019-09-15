@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"cloud.google.com/go/storage"
-	"github.com/cbsinteractive/mediabench/pkg/mediainfo"
+	"github.com/flavioribeiro/mediainfo"
 	log "github.com/sirupsen/logrus"
 	"google.golang.org/api/iterator"
 )
