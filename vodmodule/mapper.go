@@ -113,13 +113,11 @@ func (m *Mapper) chapterBreaksToDurations(ctx context.Context, chapterBreaks str
 	var obj *storage.ObjectAttrs
 
 	previousTimestamp := 0
-	totalDurations := 0
 	splittedChapterBreaks := strings.Split(chapterBreaks, ",")
 	result := make([]int, 0) // is there something better than this?
 	for i := range splittedChapterBreaks {
 		chapterBreakInMs := m.convertChapterBreakInMs(splittedChapterBreaks[i])
 		result = append(result, chapterBreakInMs-previousTimestamp)
-		totalDurations = totalDurations + chapterBreakInMs
 		previousTimestamp = chapterBreakInMs
 	}
 
@@ -132,7 +130,7 @@ func (m *Mapper) chapterBreaksToDurations(ctx context.Context, chapterBreaks str
 	fileURL := fmt.Sprintf("http://127.0.0.1%s%s/%s", proxyListen, endpoint, obj.Name)
 	mi, _ := mediainfo.New(fileURL, logger, "sample_file")
 
-	result = append(result, int(mi.General.Duration.Val)-totalDurations) // last piece should have all the content
+	result = append(result, int(mi.General.Duration.Val)-previousTimestamp) // last piece should have all the content
 
 	return result, err
 }
