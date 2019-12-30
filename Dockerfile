@@ -1,4 +1,4 @@
-FROM alpine:3.10.3
+FROM alpine:3.11.2
 RUN  apk add --no-cache ca-certificates
 ADD  gcs-helper /usr/bin/gcs-helper
 ENTRYPOINT ["/usr/bin/gcs-helper"]
