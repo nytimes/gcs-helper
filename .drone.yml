@@ -38,7 +38,7 @@ steps:
 - name: build
   image: golang:1.12.8
   commands:
-  - "go build -o gcs-helper -mod readonly -ldflags \"-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}\""
+  - go build -o gcs-helper -mod readonly -ldflags "-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}"
   environment:
     CGO_ENABLED: 0
   depends_on:
@@ -73,7 +73,7 @@ steps:
       from_secret: docker_username
   when:
     ref:
-    - "refs/tags/*"
+    - refs/tags/*
     - refs/heads/master
   depends_on:
   - test
@@ -93,12 +93,12 @@ steps:
 
 - name: docker-sanity-check-tag
   pull: always
-  image: "nytimes/gcs-helper:${DRONE_TAG#v}"
+  image: nytimes/gcs-helper:${DRONE_TAG#v}
   commands:
   - gcs-helper -version
   when:
     ref:
-    - "refs/tags/*"
+    - refs/tags/*
   depends_on:
   - build-and-push-to-dockerhub
 
@@ -142,7 +142,7 @@ steps:
 - name: build
   image: golang:1.13beta1
   commands:
-  - "go build -o gcs-helper -mod readonly -ldflags \"-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}\""
+  - go build -o gcs-helper -mod readonly -ldflags "-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}"
   environment:
     CGO_ENABLED: 0
   depends_on:

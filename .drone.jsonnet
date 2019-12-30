@@ -69,7 +69,7 @@ local lint = {
   name: 'lint',
   image: 'golangci/golangci-lint',
   pull: 'always',
-  commands: ['golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals --deadline 5m ./...'],
+  commands: ['golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals -D funlen -D wsl --deadline 5m ./...'],
   depends_on: ['mod-download'],
 };
 
