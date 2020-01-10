@@ -11,9 +11,7 @@ RUN go mod download
 COPY . .
 RUN make build
 
-FROM scratch
+FROM alpine:3.10.3
 COPY --from=alpine /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
-COPY --from=alpine /app/gcs-helper /app/
-WORKDIR /app
-EXPOSE 9592
-ENTRYPOINT ["./gcs-helper"]
+COPY --from=alpine /app/gcs-helper /usr/bin/gcs-helper
+ENTRYPOINT ["/usr/bin/gcs-helper"]
