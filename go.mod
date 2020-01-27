@@ -1,7 +1,7 @@
 module github.com/NYTimes/gcs-helper/v3
 
 require (
-	cloud.google.com/go v0.51.0
+	cloud.google.com/go v0.52.0
 	cloud.google.com/go/storage v1.4.0
 	github.com/fsouza/fake-gcs-server v1.15.0
 	github.com/google/go-cmp v0.3.1
