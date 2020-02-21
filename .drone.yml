@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: build_go_1.12.8
+name: build_go_1.12
 
 platform:
   os: linux
@@ -8,11 +8,11 @@ platform:
 
 workspace:
   base: /go
-  path: gcs-helper-1.12.8
+  path: gcs-helper-1.12
 
 steps:
 - name: mod-download
-  image: golang:1.12.8
+  image: golang:1.12
   commands:
   - go mod download
   environment:
@@ -21,7 +21,7 @@ steps:
   - clone
 
 - name: test
-  image: golang:1.12.8
+  image: golang:1.12
   commands:
   - go test -race -vet all -mod readonly ./...
   depends_on:
@@ -36,7 +36,7 @@ steps:
   - mod-download
 
 - name: build
-  image: golang:1.12.8
+  image: golang:1.12
   commands:
   - go build -o gcs-helper -mod readonly -ldflags "-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}"
   environment:
@@ -104,7 +104,7 @@ steps:
 
 ---
 kind: pipeline
-name: build_go_1.13beta1
+name: build_go_1.13
 
 platform:
   os: linux
@@ -112,11 +112,11 @@ platform:
 
 workspace:
   base: /go
-  path: gcs-helper-1.13beta1
+  path: gcs-helper-1.13
 
 steps:
 - name: mod-download
-  image: golang:1.13beta1
+  image: golang:1.13
   commands:
   - go mod download
   environment:
@@ -125,7 +125,7 @@ steps:
   - clone
 
 - name: test
-  image: golang:1.13beta1
+  image: golang:1.13
   commands:
   - go test -race -vet all -mod readonly ./...
   depends_on:
@@ -140,7 +140,7 @@ steps:
   - mod-download
 
 - name: build
-  image: golang:1.13beta1
+  image: golang:1.13
   commands:
   - go build -o gcs-helper -mod readonly -ldflags "-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}"
   environment:
