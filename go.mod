@@ -8,7 +8,7 @@ require (
 	github.com/google/gops v0.3.7
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/sirupsen/logrus v1.4.2
-	google.golang.org/api v0.19.0
+	google.golang.org/api v0.20.0
 )
 
 go 1.13
