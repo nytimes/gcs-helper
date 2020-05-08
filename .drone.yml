@@ -1,6 +1,6 @@
 ---
 kind: pipeline
-name: build_go_1.12
+name: build_go_1.13
 
 platform:
   os: linux
@@ -8,11 +8,11 @@ platform:
 
 workspace:
   base: /go
-  path: gcs-helper-1.12
+  path: gcs-helper-1.13
 
 steps:
 - name: mod-download
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - go mod download
   environment:
@@ -21,7 +21,7 @@ steps:
   - clone
 
 - name: test
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - go test -race -vet all -mod readonly ./...
   depends_on:
@@ -31,12 +31,12 @@ steps:
   pull: always
   image: golangci/golangci-lint
   commands:
-  - golangci-lint run --enable-all -D goerr113 -D errcheck -D lll -D dupl -D gochecknoglobals -D funlen -D wsl -D gomnd -D testpackage --deadline 5m ./...
+  - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals -D funlen -D wsl -D gomnd -D testpackage --deadline 5m ./...
   depends_on:
   - mod-download
 
 - name: build
-  image: golang:1.12
+  image: golang:1.13
   commands:
   - go build -o gcs-helper -mod readonly -ldflags "-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}"
   environment:
@@ -104,7 +104,7 @@ steps:
 
 ---
 kind: pipeline
-name: build_go_1.13
+name: build_go_1.14
 
 platform:
   os: linux
@@ -112,11 +112,11 @@ platform:
 
 workspace:
   base: /go
-  path: gcs-helper-1.13
+  path: gcs-helper-1.14
 
 steps:
 - name: mod-download
-  image: golang:1.13
+  image: golang:1.14
   commands:
   - go mod download
   environment:
@@ -125,7 +125,7 @@ steps:
   - clone
 
 - name: test
-  image: golang:1.13
+  image: golang:1.14
   commands:
   - go test -race -vet all -mod readonly ./...
   depends_on:
@@ -135,12 +135,12 @@ steps:
   pull: always
   image: golangci/golangci-lint
   commands:
-  - golangci-lint run --enable-all -D goerr113 -D errcheck -D lll -D dupl -D gochecknoglobals -D funlen -D wsl -D gomnd -D testpackage --deadline 5m ./...
+  - golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals -D funlen -D wsl -D gomnd -D testpackage --deadline 5m ./...
   depends_on:
   - mod-download
 
 - name: build
-  image: golang:1.13
+  image: golang:1.14
   commands:
   - go build -o gcs-helper -mod readonly -ldflags "-X main.version=$${DRONE_TAG:-SNAPSHOT-${DRONE_COMMIT}}"
   environment:
