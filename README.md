@@ -50,4 +50,8 @@ by the value of ``GCS_CLIENT_TIMEOUT``.
 
 ## Build
 
-The .drone.yml is generated from the .drone.jsonnet.
+The .drone.yml is generated from the .drone.jsonnet:
+
+```
+drone-1 jsonnet .drone.jsonnet --stream
+```
