@@ -47,3 +47,7 @@ and ``GCS_CLIENT_TIMEOUT`` controls how long requests from gcs-helper to
 Google's API can take. Since gcs-helper automatically retries on failures, the
 number of retries is roughly the value of ``GCS_HELPER_PROXY_TIMEOUT`` divided
 by the value of ``GCS_CLIENT_TIMEOUT``.
+
+## Build
+
+The .drone.yml is generated from the .drone.jsonnet.
