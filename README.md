@@ -1,5 +1,7 @@
 # gcs-helper
 
+This project is no longer maintained. If you need this repository to be un-archived, please fork it.
+
 [![Build Status](https://cloud.drone.io/api/badges/nytimes/gcs-helper/status.svg)](https://cloud.drone.io/nytimes/gcs-helper)
 [![codecov](https://codecov.io/gh/nytimes/gcs-helper/branch/master/graph/badge.svg)](https://codecov.io/gh/nytimes/gcs-helper)
 
