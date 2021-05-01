@@ -2,6 +2,7 @@ package vodmodule
 
 import (
 	"context"
+	"errors"
 	"path"
 	"regexp"
 
@@ -60,7 +61,7 @@ func (m *Mapper) getSequences(ctx context.Context, prefix string, filter *regexp
 				})
 			}
 		}
-		if err == iterator.Done {
+		if errors.Is(err, iterator.Done) {
 			return seqs, nil
 		}
 	}

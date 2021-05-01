@@ -1,5 +1,5 @@
 // the first version is used to build the binary that gets shipped to Docker Hub.
-local go_versions = ['1.12', '1.13'];
+local go_versions = ['1.13', '1.14'];
 
 local test_ci_dockerfile = {
   name: 'test-ci-dockerfile',
@@ -69,7 +69,7 @@ local lint = {
   name: 'lint',
   image: 'golangci/golangci-lint',
   pull: 'always',
-  commands: ['golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals -D funlen -D wsl -D gomnd --deadline 5m ./...'],
+  commands: ['golangci-lint run --enable-all -D errcheck -D lll -D dupl -D gochecknoglobals -D funlen -D wsl -D gomnd -D testpackage --deadline 5m ./...'],
   depends_on: ['mod-download'],
 };
 
